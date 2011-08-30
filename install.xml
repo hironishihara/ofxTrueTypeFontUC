@@ -1,0 +1,25 @@
+<install>
+    <name>ofxTrueTypeFontUC</name>
+	<version>0.01</version>
+	<author>NISHIHARA Hiroaki</author>
+	<url></url>
+	
+    <add>	
+		<!-- 	=====================================================================	-->
+		<!--	========================== add per project using this addon =========	-->
+		<!-- 	=====================================================================	-->
+	
+	    <src>
+		
+		    <folder name="addons/ofXmlSettings/src">	
+			    <file>../../../addons/ofxXmlSettings/src/ofxTrueTypeFontUC.h</file>
+			    <file>../../../addons/ofxXmlSettings/src/ofxTrueTypeFontUC.cpp</file>
+		    </folder>
+
+	    </src>
+	
+	    <include>
+		    <path>../../../addons/ofxTrueTypeFontUC/src</path>
+	    </include>    </add>
+    
+</install>
