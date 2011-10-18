@@ -327,8 +327,8 @@ ofTTFCharacterUC ofxTrueTypeFontUC::getCharacterAsPoints(int character){
 		ofLog(OF_LOG_ERROR, "getCharacterAsPoints: contours not created,  call loadFont with makeContours set to true" );
 	}
 	
-	if( bMakeContours && (int)charOutlines.size() > 0 && character >= NUM_CHARACTER_TO_START_UC && character - NUM_CHARACTER_TO_START_UC < (int)charOutlines.size() ){
-		return charOutlines[character-NUM_CHARACTER_TO_START_UC];
+	if( bMakeContours && (int)charOutlines.size() > 0) {
+		return charOutlines[character];
 	}else{
 		if(charOutlines.empty())
 			charOutlines.push_back(ofTTFCharacterUC());
@@ -408,7 +408,7 @@ vector<ofTTFCharacterUC> ofxTrueTypeFontUC::getStringAsPoints(wstring str){
 				X += cps[cy].width * letterSpacing * spaceSize;
 			}
 			else {
-				shapes.push_back(getCharacterAsPoints(str[index]));
+				shapes.push_back(getCharacterAsPoints(cy));
 				shapes.back().translate(ofPoint(X,Y));
 				X += cps[cy].setWidth * letterSpacing;
 			}
@@ -891,6 +891,7 @@ void ofxTrueTypeFontUC::loadChar(const int &charID) {
 	
 	textures[i].loadData(atlasPixels.getPixels(),atlasPixels.getWidth(),atlasPixels.getHeight(),GL_LUMINANCE_ALPHA);
 }
+
 
 
 
