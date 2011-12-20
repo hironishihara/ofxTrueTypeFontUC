@@ -322,13 +322,21 @@ float ofxTrueTypeFontUC::getSpaceSize(){
 }
 
 //------------------------------------------------------------------
-ofTTFCharacterUC ofxTrueTypeFontUC::getCharacterAsPoints(int character){
+ofTTFCharacterUC ofxTrueTypeFontUC::getCharacterAsPoints(wchar_t character){
+  int charID = getCharID(character);
+  if(cps[charID].character == TYPEFACE_UNLOADED){
+    loadChar(charID);
+  }
+  return getCharacterAsPointsFromCharID(charID);
+}
+
+ofTTFCharacterUC ofxTrueTypeFontUC::getCharacterAsPointsFromCharID(const int &charID) {
 	if( bMakeContours == false ){
 		ofLog(OF_LOG_ERROR, "getCharacterAsPoints: contours not created,  call loadFont with makeContours set to true" );
 	}
 	
 	if( bMakeContours && (int)charOutlines.size() > 0) {
-		return charOutlines[character];
+		return charOutlines[charID];
 	}else{
 		if(charOutlines.empty())
 			charOutlines.push_back(ofTTFCharacterUC());
@@ -377,7 +385,7 @@ void ofxTrueTypeFontUC::drawChar(int c, float x, float y) {
 }
 
 //-----------------------------------------------------------
-vector<ofTTFCharacterUC> ofxTrueTypeFontUC::getStringAsPoints(wstring str){
+vector<ofTTFCharacterUC> ofxTrueTypeFontUC::getStringAsPoints(wstring s){
 	vector<ofTTFCharacterUC> shapes;
 	
 	if (!bLoadedOk){
@@ -389,20 +397,19 @@ vector<ofTTFCharacterUC> ofxTrueTypeFontUC::getStringAsPoints(wstring str){
 	GLfloat		X		= 0;
 	GLfloat		Y		= 0;
 	
-	int len = (int)str.length();
+	int len = (int)s.length();
 	
 	while(index < len){
-		// int cy = (unsigned char)str[index] - NUM_CHARACTER_TO_START;
-		int cy = getCharID(str[index]);
+		int cy = getCharID(s[index]);
 		if(cps[cy].character == TYPEFACE_UNLOADED){
 			loadChar(cy);
 		}
 		if (cy < nMaxCharacters){ 			// full char set or not?
-			if (str[index] == L'\n') {
+			if (s[index] == L'\n') {
 				Y += lineHeight;
 				X = 0 ; //reset X Pos back to zero
 			}
-			else if (str[index] == L' ') {
+			else if (s[index] == L' ') {
 				// int cy = (int)'p' - NUM_CHARACTER_TO_START;
 				int cy = getCharID(L'p');
 				X += cps[cy].width * letterSpacing * spaceSize;

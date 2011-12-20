@@ -62,12 +62,9 @@ public:
 	// get the num chars in the loaded char set
 	int	getNumCharacters();	
 	
-	ofTTFCharacterUC getCharacterAsPoints(int character);
-	vector<ofTTFCharacterUC> getStringAsPoints(wstring str);
-	
-	void bind(const int &charID);
-	void unbind(const int &charID);
-	
+	ofTTFCharacterUC getCharacterAsPoints(wchar_t character);
+	vector<ofTTFCharacterUC> getStringAsPoints(wstring s);
+
 	int getNumMaxCharacters();
 	void setNumMaxCharacters(int num);
 	
@@ -105,6 +102,11 @@ private:
 	typedef struct FT_FaceRec_*  FT_Face;
 	FT_Library library;
 	FT_Face face;
+  
+  ofTTFCharacterUC getCharacterAsPointsFromCharID(const int &charID);
+  
+  void bind(const int &charID);
+	void unbind(const int &charID);
 	
 	int getCharID(const int &c);
 	void loadChar(const int &charID);
