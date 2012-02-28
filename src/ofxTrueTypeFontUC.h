@@ -52,18 +52,25 @@ public:
 	float getSpaceSize();
 	void setSpaceSize(float size);
 	float stringWidth(wstring s);
+  float stringWidth(string s);
 	float stringHeight(wstring s);
+  float stringHeight(string s);
 	
 	ofRectangle getStringBoundingBox(wstring s, float x, float y);
+  ofRectangle getStringBoundingBox(string s, float x, float y);
 	
 	void drawString(wstring s, float x, float y);
+  void drawString(string s, float x, float y);
 	void drawStringAsShapes(wstring s, float x, float y);
+  void drawStringAsShapes(string s, float x, float y);
 	
 	// get the num chars in the loaded char set
 	int	getNumCharacters();	
 	
-	ofTTFCharacterUC getCharacterAsPoints(wchar_t character);
+  ofTTFCharacterUC getCharacterAsPoints(wstring character);
+  ofTTFCharacterUC getCharacterAsPoints(string character);
 	vector<ofTTFCharacterUC> getStringAsPoints(wstring s);
+	vector<ofTTFCharacterUC> getStringAsPoints(string s);
 
 	int getNumMaxCharacters();
 	void setNumMaxCharacters(int num);
@@ -128,3 +135,10 @@ private:
 };
 
 
+namespace util {
+  namespace ofxTrueTypeFontUC {
+    
+wstring convToWString(string src);
+
+  } // ofxTrueTypeFontUC
+} // util

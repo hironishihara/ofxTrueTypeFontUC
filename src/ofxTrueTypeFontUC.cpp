@@ -16,6 +16,109 @@ static bool printVectorInfo = false;
 static int ttfGlobalDpi = 96;
 
 //--------------------------------------------------------
+
+namespace util {
+  namespace ofxTrueTypeFontUC {
+    
+template <class T>
+wstring convToUCS4(basic_string<T> src) {
+  wstring dst = L"";
+  
+  // convert UTF-8 on char or wchar_t to UCS-4 on wchar_t
+  int size = src.size();
+  int index = 0;
+  while (index < size) {
+    wchar_t c = (unsigned char)src[index];
+    if (c < 0x80) {
+      dst += (c);
+    } else if (c < 0xe0) {
+      if (index + 1 < size) {
+        dst += (((c & 0x1f) << 6) | (src[index+1] & 0x3f));
+        index++;
+      }
+    } else if (c < 0xf0) {
+      if (index + 2 < size) {
+        dst += (((c & 0x0f) << 12) | ((src[index+1] & 0x3f) << 6) |
+                (src[index+2] & 0x3f));
+        index += 2;
+      }
+    } else if (c < 0xf8) {
+      if (index + 3 < size) {
+        dst += (((c & 0x07) << 18) | ((src[index+1] & 0x3f) << 12) |
+                ((src[index+2] & 0x3f) << 6) | (src[index+3] & 0x3f));
+        index += 3;
+      }
+    } else if (c < 0xfc) {
+      if (index + 4 < size) {
+        dst += (((c & 0x03) << 24) | ((src[index+1] & 0x3f) << 18) |
+                ((src[index+2] & 0x3f) << 12) | ((src[index+3] & 0x3f) << 6) |
+                (src[index+4] & 0x3f));
+        index += 4;
+      }
+    } else if (c < 0xfe) {
+      if (index + 5 < size) {
+        dst += (((c & 0x01) << 30) | ((src[index+1] & 0x3f) << 24) |
+                ((src[index+2] & 0x3f) << 18) | ((src[index+3] & 0x3f) << 12) |
+                ((src[index+4] & 0x3f) << 6) | (src[index+5] & 0x3f));
+        index += 5;
+      }
+    }
+    index++;
+  }
+  
+  return dst;
+}
+
+    
+wstring convToWString(string src) {
+  
+#ifdef TARGET_WIN32
+
+  wstring dst = L"";
+  typedef codecvt<wchar_t, char, mbstate_t> codecvt_t;
+  
+  locale loc = locale("");
+  if(!std::has_facet<codecvt_t>(loc))
+    return dst;
+  
+  const codecvt_t& conv = use_facet<codecvt_t>(loc);
+  
+  const std::size_t size = src.length();  
+  std::vector<wchar_t> dst_vctr(size);
+  wchar_t* const buf = &dst_vctr[0];
+  
+  const char* dummy;
+  wchar_t* next;
+  mbstate_t state = {0};
+  const char* const s = src.c_str();
+  
+  if (conv.in(state, s, s + size, dummy, buf, buf + size, next) == codecvt_t::ok) {
+    dst = std::wstring(buf, next - buf);
+  }
+  
+  return dst;
+
+#elif defined __clang__
+  
+  wstring dst = L"";
+  for (int i=0; i<src.size(); ++i) {
+    dst += src[i];
+  }
+  
+  return dst;
+  
+#else
+
+  return convToUCS4<char>(src);
+  
+#endif
+
+}
+
+  } // ofxTrueTypeFontUC
+} // util
+
+//--------------------------------------------------------
 void ofxTrueTypeFontUC::setGlobalDpi(int newDpi){
 	ttfGlobalDpi = newDpi;
 }
@@ -322,12 +425,20 @@ float ofxTrueTypeFontUC::getSpaceSize(){
 }
 
 //------------------------------------------------------------------
-ofTTFCharacterUC ofxTrueTypeFontUC::getCharacterAsPoints(wchar_t character){
-  int charID = getCharID(character);
+ofTTFCharacterUC ofxTrueTypeFontUC::getCharacterAsPoints(wstring character) {
+  
+  wstring c = util::ofxTrueTypeFontUC::convToUCS4<wchar_t>(character);
+  
+  int charID = getCharID(c[0]);
   if(cps[charID].character == TYPEFACE_UNLOADED){
     loadChar(charID);
   }
   return getCharacterAsPointsFromCharID(charID);
+}
+
+ofTTFCharacterUC ofxTrueTypeFontUC::getCharacterAsPoints(string character) {
+  
+  return getCharacterAsPoints(util::ofxTrueTypeFontUC::convToWString(character));
 }
 
 ofTTFCharacterUC ofxTrueTypeFontUC::getCharacterAsPointsFromCharID(const int &charID) {
@@ -386,6 +497,13 @@ void ofxTrueTypeFontUC::drawChar(int c, float x, float y) {
 
 //-----------------------------------------------------------
 vector<ofTTFCharacterUC> ofxTrueTypeFontUC::getStringAsPoints(wstring s){
+  
+#ifdef __llvm__
+#ifdef __clang__
+  s = util::ofxTrueTypeFontUC::convToUCS4<wchar_t>(s);
+#endif
+#endif
+
 	vector<ofTTFCharacterUC> shapes;
 	
 	if (!bLoadedOk){
@@ -415,7 +533,7 @@ vector<ofTTFCharacterUC> ofxTrueTypeFontUC::getStringAsPoints(wstring s){
 				X += cps[cy].width * letterSpacing * spaceSize;
 			}
 			else {
-				shapes.push_back(getCharacterAsPoints(cy));
+				shapes.push_back(getCharacterAsPointsFromCharID(cy));
 				shapes.back().translate(ofPoint(X,Y));
 				X += cps[cy].setWidth * letterSpacing;
 			}
@@ -424,6 +542,11 @@ vector<ofTTFCharacterUC> ofxTrueTypeFontUC::getStringAsPoints(wstring s){
 	}
 	return shapes;
 	
+}
+
+vector<ofTTFCharacterUC> ofxTrueTypeFontUC::getStringAsPoints(string s) {
+
+  return getStringAsPoints(util::ofxTrueTypeFontUC::convToWString(s));
 }
 
 //-----------------------------------------------------------
@@ -442,13 +565,31 @@ void ofxTrueTypeFontUC::drawCharAsShape(int c, float x, float y) {
 
 //-----------------------------------------------------------
 float ofxTrueTypeFontUC::stringWidth(wstring c) {
+
+#ifdef __llvm__
+#ifdef __clang__
+  c = util::ofxTrueTypeFontUC::convToUCS4<wchar_t>(c);
+#endif
+#endif
+
 	ofRectangle rect = getStringBoundingBox(c, 0,0);
 	return rect.width;
 }
 
+float ofxTrueTypeFontUC::stringWidth(string s) {
+  
+  return stringWidth(util::ofxTrueTypeFontUC::convToWString(s));
+}
+
 
 ofRectangle ofxTrueTypeFontUC::getStringBoundingBox(wstring c, float x, float y){
-	
+
+#ifdef __llvm__
+#ifdef __clang__
+  c = util::ofxTrueTypeFontUC::convToUCS4<wchar_t>(c);
+#endif
+#endif
+
 	ofRectangle myRect;
 	
 	if (!bLoadedOk){
@@ -528,15 +669,38 @@ ofRectangle ofxTrueTypeFontUC::getStringBoundingBox(wstring c, float x, float y)
 	return myRect;
 }
 
+ofRectangle ofxTrueTypeFontUC::getStringBoundingBox(string s, float x, float y){
+
+  return getStringBoundingBox(util::ofxTrueTypeFontUC::convToWString(s), x, y);
+}
+
 //-----------------------------------------------------------
 float ofxTrueTypeFontUC::stringHeight(wstring c) {
+
+#ifdef __llvm__
+#ifdef __clang__
+  c = util::ofxTrueTypeFontUC::convToUCS4<wchar_t>(c);
+#endif
+#endif
+
 	ofRectangle rect = getStringBoundingBox(c, 0,0);
 	return rect.height;
 }
 
+float ofxTrueTypeFontUC::stringHeight(string s) {
+  
+  return stringHeight(util::ofxTrueTypeFontUC::convToWString(s));
+}
+
 //=====================================================================
 void ofxTrueTypeFontUC::drawString(wstring c, float x, float y) {
-	
+
+#ifdef __llvm__
+#ifdef __clang__
+  c = util::ofxTrueTypeFontUC::convToUCS4<wchar_t>(c);
+#endif
+#endif
+
 	/*glEnable(GL_BLEND);
 	 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	 texAtlas.draw(0,0);*/
@@ -582,6 +746,11 @@ void ofxTrueTypeFontUC::drawString(wstring c, float x, float y) {
 	}  
 }
 
+void ofxTrueTypeFontUC::drawString(string s, float x, float y) {
+ 
+  return drawString(util::ofxTrueTypeFontUC::convToWString(s), x, y);
+}
+
 //=====================================================================
 void ofxTrueTypeFontUC::drawStringAsShapes(wstring c, float x, float y) {
 	
@@ -595,6 +764,13 @@ void ofxTrueTypeFontUC::drawStringAsShapes(wstring c, float x, float y) {
 		ofLog(OF_LOG_ERROR,"ofxTrueTypeFontUC::drawStringAsShapes - Error : contours not created for this font - call loadFont with makeContours set to true");
 		return;
 	}
+  
+#ifdef __llvm__
+#ifdef __clang__
+  c = util::ofxTrueTypeFontUC::convToUCS4<wchar_t>(c);
+#endif
+#endif
+
 	
 	GLint		index	= 0;
 	GLfloat		X		= 0;
@@ -631,6 +807,11 @@ void ofxTrueTypeFontUC::drawStringAsShapes(wstring c, float x, float y) {
 	
 	ofPopMatrix();
 	
+}
+
+void ofxTrueTypeFontUC::drawStringAsShapes(string s, float x, float y) {
+  
+  return drawStringAsShapes(util::ofxTrueTypeFontUC::convToWString(s), x, y);
 }
 
 //-----------------------------------------------------------
