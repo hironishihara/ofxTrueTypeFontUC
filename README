@@ -1,0 +1,30 @@
+The ofxTrueTypeFontUC is an extension of ofTrueTypeFont class for UNICODE characters.
+
+This addon is under the MIT Licence.
+
+
+SYNOPSIS:
+
+// ex.) testApp.h
+
+#include "ofxTrueTypeFontUC.h"
+
+class testApp : public ofBaseApp {
+    ...
+    ofxTrueTypeFontUC myFont;
+}
+
+// ex.) testApp.cpp
+
+void testApp::setup() {
+    ...
+    myFont.loadFont("barfooFont.oft", 64, true, true);
+}
+
+void testApp::draw() {
+    std::wstring wide_str = L"こんにちは";
+    myFont.drawString(wide_str, 100, 100);  // std::wstring is available.
+
+    std::string str = "はじめまして";
+    myFont.drawString(str, 100, 200);  // std::string is available.
+}
