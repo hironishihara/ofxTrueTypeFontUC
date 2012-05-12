@@ -35,7 +35,7 @@ void testApp::draw() {
 // ex.) testApp.cpp
 
 void testApp::setup() {
-    …
+    ...
     std::string src_string = "お久しぶりです";
     std::wstring dst_string = util::ofxTrueTypeFontUC::convToWString(src_string);  // conversion to std::wstring
 }
