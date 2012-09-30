@@ -104,7 +104,9 @@ wstring convToWString(string src) {
   for (int i=0; i<src.size(); ++i) {
     dst += src[i];
   }
-  
+#if defined(__clang_major__) && (__clang_major__ >= 4)
+  dst = convToUCS4<wchar_t>(dst);
+#endif
   return dst;
   
 #else
@@ -427,9 +429,13 @@ float ofxTrueTypeFontUC::getSpaceSize(){
 //------------------------------------------------------------------
 ofTTFCharacterUC ofxTrueTypeFontUC::getCharacterAsPoints(wstring character) {
   
-  wstring c = util::ofxTrueTypeFontUC::convToUCS4<wchar_t>(character);
+#ifdef __clang__
+#if defined(__clang_major__) && (__clang_major__ <= 3)
+  character = util::ofxTrueTypeFontUC::convToUCS4<wchar_t>(character);
+#endif
+#endif
   
-  int charID = getCharID(c[0]);
+  int charID = getCharID(character[0]);
   if(cps[charID].character == TYPEFACE_UNLOADED){
     loadChar(charID);
   }
@@ -498,8 +504,8 @@ void ofxTrueTypeFontUC::drawChar(int c, float x, float y) {
 //-----------------------------------------------------------
 vector<ofTTFCharacterUC> ofxTrueTypeFontUC::getStringAsPoints(wstring s){
   
-#ifdef __llvm__
 #ifdef __clang__
+#if defined(__clang_major__) && (__clang_major__ <= 3)
   s = util::ofxTrueTypeFontUC::convToUCS4<wchar_t>(s);
 #endif
 #endif
@@ -578,8 +584,8 @@ float ofxTrueTypeFontUC::stringWidth(string s) {
 
 ofRectangle ofxTrueTypeFontUC::getStringBoundingBox(wstring c, float x, float y){
 
-#ifdef __llvm__
 #ifdef __clang__
+#if defined(__clang_major__) && (__clang_major__ <= 3)
   c = util::ofxTrueTypeFontUC::convToUCS4<wchar_t>(c);
 #endif
 #endif
@@ -683,8 +689,8 @@ float ofxTrueTypeFontUC::stringHeight(string s) {
 //=====================================================================
 void ofxTrueTypeFontUC::drawString(wstring c, float x, float y) {
 
-#ifdef __llvm__
 #ifdef __clang__
+#if defined(__clang_major__) && (__clang_major__ <= 3)
   c = util::ofxTrueTypeFontUC::convToUCS4<wchar_t>(c);
 #endif
 #endif
@@ -753,8 +759,8 @@ void ofxTrueTypeFontUC::drawStringAsShapes(wstring c, float x, float y) {
 		return;
 	}
   
-#ifdef __llvm__
 #ifdef __clang__
+#if defined(__clang_major__) && (__clang_major__ <= 3)
   c = util::ofxTrueTypeFontUC::convToUCS4<wchar_t>(c);
 #endif
 #endif
