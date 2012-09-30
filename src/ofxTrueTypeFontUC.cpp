@@ -99,7 +99,7 @@ wstring convToWString(string src) {
   return dst;
 
 #elif defined __clang__
-  
+
   wstring dst = L"";
   for (int i=0; i<src.size(); ++i) {
     dst += src[i];
@@ -566,12 +566,6 @@ void ofxTrueTypeFontUC::drawCharAsShape(int c, float x, float y) {
 //-----------------------------------------------------------
 float ofxTrueTypeFontUC::stringWidth(wstring c) {
 
-#ifdef __llvm__
-#ifdef __clang__
-  c = util::ofxTrueTypeFontUC::convToUCS4<wchar_t>(c);
-#endif
-#endif
-
 	ofRectangle rect = getStringBoundingBox(c, 0,0);
 	return rect.width;
 }
@@ -676,12 +670,6 @@ ofRectangle ofxTrueTypeFontUC::getStringBoundingBox(string s, float x, float y){
 
 //-----------------------------------------------------------
 float ofxTrueTypeFontUC::stringHeight(wstring c) {
-
-#ifdef __llvm__
-#ifdef __clang__
-  c = util::ofxTrueTypeFontUC::convToUCS4<wchar_t>(c);
-#endif
-#endif
 
 	ofRectangle rect = getStringBoundingBox(c, 0,0);
 	return rect.height;
