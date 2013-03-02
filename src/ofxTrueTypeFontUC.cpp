@@ -85,6 +85,10 @@ wstring convToWString(string src) {
   
   const std::size_t size = src.length();  
   std::vector<wchar_t> dst_vctr(size);
+    
+    if (dst_vctr.size() == 0)
+        return dst;
+    
   wchar_t* const buf = &dst_vctr[0];
   
   const char* dummy;

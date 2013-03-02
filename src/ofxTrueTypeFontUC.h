@@ -2,6 +2,7 @@
 
 
 #include <vector>
+#include <locale>
 #include "ofPoint.h"
 #include "ofRectangle.h"
 #include "ofConstants.h"
