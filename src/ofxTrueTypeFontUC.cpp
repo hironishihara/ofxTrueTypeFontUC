@@ -75,19 +75,18 @@ wstring convToUCS4(basic_string<T> src) {
 
 #ifdef TARGET_WIN32
     
-typedef basic_string<unsigned int> ustring;
+typedef basic_string<int> ustring;
 
 ustring convUTF16ToUCS4(wstring src) {
   // decord surrogate pairs
   ustring dst;
   
   for (std::wstring::iterator iter = src.begin(); iter != src.end(); ++iter) {
-    if (0xD800 < *iter && *iter < 0xDBFF){  // surrogate pairs (high)?
-      if (0xDC00 < *(iter+1) && *(iter+1) < 0xDFFF){  // surrogate paires (low)?
-        unsigned int hi = *iter & 0x3FF;
-        unsigned int lo = *(iter+1) & 0x3FF;
-        unsigned int code = (hi << 10) | lo;
-        std::cout << std::hex << code + 0x10000 << std::endl;
+    if (0xD800 < *iter && *iter < 0xDBFF){
+      if (0xDC00 < *(iter+1) && *(iter+1) < 0xDFFF){
+        int hi = *iter & 0x3FF;
+        int lo = *(iter+1) & 0x3FF;
+        int code = (hi << 10) | lo;
         dst += code + 0x10000;
         ++iter;
       }
