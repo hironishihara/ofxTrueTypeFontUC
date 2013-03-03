@@ -73,6 +73,36 @@ wstring convToUCS4(basic_string<T> src) {
   return dst;
 }
 
+#ifdef TARGET_WIN32
+    
+typedef basic_string<unsigned int> ustring;
+
+ustring convUTF16ToUCS4(wstring src) {
+  // decord surrogate pairs
+  ustring dst;
+  
+  for (std::wstring::iterator iter = src.begin(); iter != src.end(); ++iter) {
+    if (0xD800 < *iter && *iter < 0xDBFF){  // surrogate pairs (high)?
+      if (0xDC00 < *(iter+1) && *(iter+1) < 0xDFFF){  // surrogate paires (low)?
+        unsigned int hi = *iter & 0x3FF;
+        unsigned int lo = *(iter+1) & 0x3FF;
+        unsigned int code = (hi << 10) | lo;
+        std::cout << std::hex << code + 0x10000 << std::endl;
+        dst += code + 0x10000;
+        ++iter;
+      }
+      else {
+        dst.clear();
+        return dst;
+      }
+    }
+    else
+      dst += *iter;
+  }
+  return dst;
+}
+
+#endif
     
 wstring convToWString(string src) {
   
@@ -435,12 +465,14 @@ float ofxTrueTypeFontUC::getSpaceSize(){
 }
 
 //------------------------------------------------------------------
-ofTTFCharacterUC ofxTrueTypeFontUC::getCharacterAsPoints(wstring character) {
-  
-#ifdef __clang__
-#if defined(__clang_major__) && (__clang_major__ <= 3)
-  character = util::ofxTrueTypeFontUC::convToUCS4<wchar_t>(character);
-#endif
+ofTTFCharacterUC ofxTrueTypeFontUC::getCharacterAsPoints(wstring src) {
+
+#ifdef TARGET_WIN32
+  ustring character = util::ofxTrueTypeFontUC::convUTF16ToUCS4(src);
+#elif defined(__clang_major__) && (__clang_major__ <= 3)
+  wstring character = util::ofxTrueTypeFontUC::convToUCS4<wchar_t>(src);
+#else
+  wstring character = src;
 #endif
   
   int charID = getCharID(character[0]);
@@ -510,12 +542,14 @@ void ofxTrueTypeFontUC::drawChar(int c, float x, float y) {
 }
 
 //-----------------------------------------------------------
-vector<ofTTFCharacterUC> ofxTrueTypeFontUC::getStringAsPoints(wstring s){
+vector<ofTTFCharacterUC> ofxTrueTypeFontUC::getStringAsPoints(wstring src){
   
-#ifdef __clang__
-#if defined(__clang_major__) && (__clang_major__ <= 3)
-  s = util::ofxTrueTypeFontUC::convToUCS4<wchar_t>(s);
-#endif
+#ifdef TARGET_WIN32
+  ustring s = util::ofxTrueTypeFontUC::convUTF16ToUCS4(src);
+#elif defined(__clang_major__) && (__clang_major__ <= 3)
+  wstring s = util::ofxTrueTypeFontUC::convToUCS4<wchar_t>(src);
+#else
+  wstring s = src;
 #endif
 
 	vector<ofTTFCharacterUC> shapes;
@@ -590,12 +624,14 @@ float ofxTrueTypeFontUC::stringWidth(string s) {
 }
 
 
-ofRectangle ofxTrueTypeFontUC::getStringBoundingBox(wstring c, float x, float y){
+ofRectangle ofxTrueTypeFontUC::getStringBoundingBox(wstring src, float x, float y){
 
-#ifdef __clang__
-#if defined(__clang_major__) && (__clang_major__ <= 3)
-  c = util::ofxTrueTypeFontUC::convToUCS4<wchar_t>(c);
-#endif
+#ifdef TARGET_WIN32
+  ustring c = util::ofxTrueTypeFontUC::convUTF16ToUCS4(src);
+#elif defined(__clang_major__) && (__clang_major__ <= 3)
+  wstring c = util::ofxTrueTypeFontUC::convToUCS4<wchar_t>(src);
+#else
+  wstring c = src;
 #endif
 
 	ofRectangle myRect;
@@ -695,12 +731,14 @@ float ofxTrueTypeFontUC::stringHeight(string s) {
 }
 
 //=====================================================================
-void ofxTrueTypeFontUC::drawString(wstring c, float x, float y) {
+void ofxTrueTypeFontUC::drawString(wstring src, float x, float y) {
 
-#ifdef __clang__
-#if defined(__clang_major__) && (__clang_major__ <= 3)
-  c = util::ofxTrueTypeFontUC::convToUCS4<wchar_t>(c);
-#endif
+#ifdef TARGET_WIN32
+  ustring c = util::ofxTrueTypeFontUC::convUTF16ToUCS4(src);
+#elif defined(__clang_major__) && (__clang_major__ <= 3)
+  wstring c = util::ofxTrueTypeFontUC::convToUCS4<wchar_t>(src);
+#else
+  wstring c = src;
 #endif
 
 	/*glEnable(GL_BLEND);
@@ -754,7 +792,7 @@ void ofxTrueTypeFontUC::drawString(string s, float x, float y) {
 }
 
 //=====================================================================
-void ofxTrueTypeFontUC::drawStringAsShapes(wstring c, float x, float y) {
+void ofxTrueTypeFontUC::drawStringAsShapes(wstring src, float x, float y) {
 	
 	if (!bLoadedOk){
 		ofLog(OF_LOG_ERROR,"ofxTrueTypeFontUC::drawStringAsShapes - Error : font not allocated -- line %d in %s", __LINE__,__FILE__);
@@ -767,10 +805,12 @@ void ofxTrueTypeFontUC::drawStringAsShapes(wstring c, float x, float y) {
 		return;
 	}
   
-#ifdef __clang__
-#if defined(__clang_major__) && (__clang_major__ <= 3)
-  c = util::ofxTrueTypeFontUC::convToUCS4<wchar_t>(c);
-#endif
+#ifdef TARGET_WIN32
+  ustring c = util::ofxTrueTypeFontUC::convUTF16ToUCS4(src);
+#elif defined(__clang_major__) && (__clang_major__ <= 3)
+  wstring c = util::ofxTrueTypeFontUC::convToUCS4<wchar_t>(src);
+#else
+  wstring c = src;
 #endif
 
 	
