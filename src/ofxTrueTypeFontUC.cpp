@@ -82,8 +82,8 @@ ustring convUTF16ToUCS4(wstring src) {
   ustring dst;
   
   for (std::wstring::iterator iter = src.begin(); iter != src.end(); ++iter) {
-    if (0xD800 < *iter && *iter < 0xDBFF){
-      if (0xDC00 < *(iter+1) && *(iter+1) < 0xDFFF){
+    if (0xD800 <= *iter && *iter <= 0xDFFF){
+      if (0xD800 <= *iter && *iter <= 0xDBFF && 0xDC00 <= *(iter+1) && *(iter+1) <= 0xDFFF){
         int hi = *iter & 0x3FF;
         int lo = *(iter+1) & 0x3FF;
         int code = (hi << 10) | lo;
@@ -91,8 +91,7 @@ ustring convUTF16ToUCS4(wstring src) {
         ++iter;
       }
       else {
-        dst.clear();
-        return dst;
+        // ofLog(OF_LOG_ERROR, "util::ofxTrueTypeFontUC::convUTF16ToUCS4 - wrong input" );
       }
     }
     else
