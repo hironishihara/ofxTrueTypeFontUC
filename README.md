@@ -1,12 +1,7 @@
 #ofxTrueTypeFontUC#
----
-
-##Overview##
----
 ofxTrueTypeFontUC is an extension of ofTrueTypeFont class for UNICODE characters.
 
 ##License##
----
 ofxTrueTypeFontUC is distributed under the MIT License. This gives everyone the freedoms to use ofxTrueTypeFontUC  in any context: commercial or non-commercial, public or private, open or closed source.
 
 The MIT License (MIT)
@@ -32,8 +27,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ##Methods##
----
-
 ###bool loadFont(…)###
 bool loadFont(string filename, int fontsize, bool bAntiAliased, bool makeContours, float simplifyAmt, int dpi)  
   
@@ -48,7 +41,6 @@ void drawStringAsShapes(string s, float x, float y)
 ###ofPath getCharacterAsPoints(...)###
 ofPath getCharacterAsPoints(wstring wcharacter)  
 ofPath getCharacterAsPoints(string character)  
-  
   
 ###vector&lt;ofPath> getStringAsPoints(…)###
 vector&lt;ofPath> getStringAsPoints(wstring ws)  
@@ -109,7 +101,6 @@ int getLimitCharactersNum()
 void reserveCharacters(int charactersNumber)  
   
 ##Additional Methods##
----
 ###wstring util::ofxTrueTypeFontUC::convToWString(...)###
 wstring util::ofxTrueTypeFontUC::convToWString(string src)  
   
