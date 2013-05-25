@@ -1,6 +1,8 @@
 #ofxTrueTypeFontUC#
 ofxTrueTypeFontUC is an extension of ofTrueTypeFont class for UNICODE characters.
 
+<div style="float: right"><img src="https://pbs.twimg.com/media/AYFmDI9CAAAY6o3.png" /></div>
+
 ##License##
 ofxTrueTypeFontUC is distributed under the MIT License. This gives everyone the freedoms to use ofxTrueTypeFontUC  in any context: commercial or non-commercial, public or private, open or closed source.
 
