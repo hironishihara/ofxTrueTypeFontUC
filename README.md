@@ -82,7 +82,7 @@ int getLimitCharactersNum()
 ###void reserveCharacters(...)###
 void reserveCharacters(int charactersNumber)  
   
-##Additional Methods##
+##Additional Function##
 ###wstring util::ofxTrueTypeFontUC::convToWString(...)###
 wstring util::ofxTrueTypeFontUC::convToWString(string src)  
   
