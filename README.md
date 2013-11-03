@@ -1,5 +1,5 @@
 #ofxTrueTypeFontUC#
-ofxTrueTypeFontUC is an extension of ofTrueTypeFont class for UNICODE characters.
+ofxTrueTypeFontUC is an extension of ofTrueTypeFont class for UNICODE characters. Current version is based on version 0.8.0.
 
 ##License##
 ofxTrueTypeFontUC is distributed under the MIT License. This gives everyone the freedoms to use ofxTrueTypeFontUC  in any context: commercial or non-commercial, public or private, open or closed source.
@@ -8,23 +8,23 @@ Please see License.txt for details.
 
 ##Methods##
 ###bool loadFont(…)###
-bool loadFont(string filename, int fontsize, bool bAntiAliased, bool makeContours, float simplifyAmt, int dpi)  
+bool loadFont(const string &filename, int fontsize, bool bAntiAliased=true, bool makeContours=false, float simplifyAmt=0.3, int dpi=0)  
+
+###void reloadFont()###
+void reloadFont()  
   
 ###void drawString(...)###
-void drawString(wstring ws, float x, float y)  
-void drawString(string s, float x, float y)  
+void drawString(const string &utf8_string, float x, float y)  
 
 ###void drawStringAsShapes(...)###
-void drawStringAsShapes(wstring ws, float x, float y)  
-void drawStringAsShapes(string s, float x, float y)  
-  
-###ofPath getCharacterAsPoints(...)###
-ofPath getCharacterAsPoints(wstring wcharacter)  
-ofPath getCharacterAsPoints(string character)  
+void drawStringAsShapes(const string &utf8_string, float x, float y)  
+In many cases, this function is faster than drawString(...).
   
 ###vector&lt;ofPath> getStringAsPoints(…)###
-vector&lt;ofPath> getStringAsPoints(wstring ws)  
-vector&lt;ofPath> getStringAsPoints(string s)  
+vector&lt;ofPath> getStringAsPoints(const string &utf8_string, bool vflipvflip=ofIsVFlipped())  
+
+###ofRectangle getStringBoundingBox(...)###
+ofRectangle getStringBoundingBox(const string &utf8_string, float x, float y)  
   
 ###bool isLoaded()###
 bool isLoaded()  
@@ -32,8 +32,8 @@ bool isLoaded()
 ###bool isAntiAliased()###
 bool isAntiAliased()  
   
-###int getFontSize()###
-int getFontSize()  
+###int getSize()###
+int getSize()  
   
 ###float getLineHeight()###
 float getLineHeight()  
@@ -54,33 +54,21 @@ float getSpaceSize()
 void setSpaceSize(float size)  
   
 ###float stringWidth(...)###
-float stringWidth(wstring ws)  
 float stringWidth(string s)  
   
 ###float stringHeight(...)###
-float stringHeight(wstring ws)  
 float stringHeight(string s)  
   
-###ofRectangle getStringBoundingBox(...)###
-ofRectangle getStringBoundingBox(wstring ws, float x, float y)   
-ofRectangle getStringBoundingBox(string s, float x, float y)  
+###int getNumCharacters()###
+int getNumCharacters()
 
-###void reloadFont()###
-void reloadFont()  
+###ofTextEncoding getEncoding()###
+ofTextEncoding getEncoding()
 
-###void unloadFont()###
-void unloadFont()  
-
-###int getLoadedCharactersCount()###
-int  getLoadedCharactersCount()
-  
-###int getLimitCharactersNum()###
-int getLimitCharactersNum()  
-
-###void reserveCharacters(...)###
-void reserveCharacters(int charactersNumber)  
+###void setGlobalDpi(...))###
+void setGlobalDpi(int newDpi)
   
 ##Additional Methods##
-###wstring util::ofxTrueTypeFontUC::convToWString(...)###
-wstring util::ofxTrueTypeFontUC::convToWString(string src)  
+###wstring util::ofxTrueTypeFontUC::convUTF8ToUTF32(...)###
+wstring util::ofxTrueTypeFontUC::convUTF8ToUTF32(const string &utf8_string)  
   
