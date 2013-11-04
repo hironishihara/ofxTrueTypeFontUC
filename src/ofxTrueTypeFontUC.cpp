@@ -26,15 +26,15 @@
 
 //--------------------------------------------------
 typedef struct {
-	int character;
-	int height;
-	int width;
-	int setWidth;
-	int topExtent;
-	int leftExtent;
-	float tW,tH;
-	float x1,x2,y1,y2;
-	float t1,t2,v1,v2;
+  int character;
+  int height;
+  int width;
+  int setWidth;
+  int topExtent;
+  int leftExtent;
+  float tW, tH;
+  float x1, x2, y1, y2;
+  float t1, t2, v1, v2;
 } charPropsUC;
 
 static bool printVectorInfo = false;
@@ -49,39 +49,39 @@ static FT_Face face;
 //========================================================
 class ofxTrueTypeFontUC::Impl {
 public:
-  Impl() {};
-  ~Impl() {};
+  Impl(){};
+  ~Impl(){};
   
-	bool bLoadedOk;
-	bool bAntiAliased;
-	float lineHeight;
-	float letterSpacing;
-	float spaceSize;
+  bool bLoadedOk;
+  bool bAntiAliased;
+  float lineHeight;
+  float letterSpacing;
+  float spaceSize;
   int fontSize;
-	bool bMakeContours;
-	float simplifyAmt;
-	int dpi;
+  bool bMakeContours;
+  float simplifyAmt;
+  int dpi;
   int border;
-	string filename;
-	bool binded;
+  string filename;
+  bool binded;
   ofTextEncoding encoding;
   
-	GLint blend_src, blend_dst;
-	GLboolean blend_enabled;
-	GLboolean texture_2d_enabled;
+  GLint blend_src, blend_dst;
+  GLboolean blend_enabled;
+  GLboolean texture_2d_enabled;
   ofMesh stringQuads;
   
   const unsigned int kLimitCharactersNum = 10000;
   const unsigned int kTypeFaceUnloaded = 0;
-
+  
   vector<unsigned int> loadedChars;
-	vector<charPropsUC> cps;  // properties for each character
+  vector<charPropsUC> cps;  // properties for each character
   vector <ofPath> charOutlines;
-	vector <ofPath> charOutlinesNonVFlipped;
+  vector <ofPath> charOutlinesNonVFlipped;
   vector<ofTexture> texAtlas;
   
   void drawChar(const unsigned int &charID, float x, float y);
-	void drawCharAsShape(const unsigned int &charID, float x, float y);
+  void drawCharAsShape(const unsigned int &charID, float x, float y);
   ofPath getCharacterAsPoints(const unsigned int &charID, bool vflip=ofIsVFlipped());
   
   unsigned int getCharID(const unsigned int &);
@@ -90,27 +90,27 @@ public:
   void unbind(const unsigned int &);
   
 #if defined(TARGET_ANDROID) || defined(TARGET_OF_IOS)
-	void ofUnloadAllFontTextures();
-	void ofReloadAllFontTextures();
+  void ofUnloadAllFontTextures();
+  void ofReloadAllFontTextures();
 #endif
   
-	void unloadTextures();
-	static bool	initLibraries();
-	static void finishLibraries();
+  void unloadTextures();
+  static bool initLibraries();
+  static void finishLibraries();
 };
 
 //--------------------------------------------------------
 void ofxTrueTypeFontUC::setGlobalDpi(int newDpi){
-	ttfGlobalDpi = newDpi;
+  ttfGlobalDpi = newDpi;
 }
 
 //--------------------------------------------------------
 static ofPath makeContoursForCharacter(FT_Face &face);
 static ofPath makeContoursForCharacter(FT_Face &face){
-  int nContours	= face->glyph->outline.n_contours;
-  int startPos	= 0;
+  int nContours = face->glyph->outline.n_contours;
+  int startPos = 0;
   
-  char * tags		= face->glyph->outline.tags;
+  char * tags = face->glyph->outline.tags;
   FT_Vector * vec = face->glyph->outline.points;
   
   ofPath charOutlines;
@@ -165,9 +165,9 @@ static ofPath makeContoursForCharacter(FT_Face &face){
           bool lastPointCubic =  (FT_CURVE_TAG(tags[prevPoint]) != FT_CURVE_TAG_ON) && (FT_CURVE_TAG(tags[prevPoint]) == FT_CURVE_TAG_CUBIC);
           
           if (lastPointCubic) {
-            ofPoint controlPoint1((float)vec[prevPoint].x,	(float)-vec[prevPoint].y);
+            ofPoint controlPoint1((float)vec[prevPoint].x, (float)-vec[prevPoint].y);
             ofPoint controlPoint2((float)vec[j].x, (float)-vec[j].y);
-            ofPoint nextPoint((float) vec[nextIndex].x,	-(float) vec[nextIndex].y);
+            ofPoint nextPoint((float) vec[nextIndex].x, -(float) vec[nextIndex].y);
             
             //cubic_bezier(testOutline, lastPoint.x, lastPoint.y, controlPoint1.x, controlPoint1.y, controlPoint2.x, controlPoint2.y, nextPoint.x, nextPoint.y, 8);
             charOutlines.bezierTo(controlPoint1.x/64, controlPoint1.y/64, controlPoint2.x/64, controlPoint2.y/64, nextPoint.x/64, nextPoint.y/64);
@@ -210,7 +210,7 @@ static ofPath makeContoursForCharacter(FT_Face &face){
           bool nextIsConnic = (FT_CURVE_TAG( tags[nextIndex] ) != FT_CURVE_TAG_ON) && (FT_CURVE_TAG( tags[nextIndex]) != FT_CURVE_TAG_CUBIC);
           
           //create a 'virtual on point' if we have two connic points
-          if(nextIsConnic){
+          if (nextIsConnic) {
             nextPoint = (conicPoint + nextPoint) / 2;
             if (printVectorInfo) {
               ofLogNotice("ofxTrueTypeFontUC") << "|_______ double connic!";
@@ -229,12 +229,12 @@ static ofPath makeContoursForCharacter(FT_Face &face){
         }
       }
       
-			//end for
+      //end for
     }
     charOutlines.close();
   }
   
-	return charOutlines;
+  return charOutlines;
 }
 
 #if defined(TARGET_ANDROID) || defined(TARGET_OF_IOS)
@@ -253,7 +253,7 @@ void ofUnloadAllFontTextures(){
 
 void ofReloadAllFontTextures(){
   set<ofxTrueTypeFontUC*>::iterator it;
-  for (it=all_fonts().begin(); it!=all_fonts().end(); ++it){
+  for (it=all_fonts().begin(); it!=all_fonts().end(); ++it) {
     (*it)->reloadTextures();
   }
 }
@@ -261,22 +261,22 @@ void ofReloadAllFontTextures(){
 
 #ifdef TARGET_OSX
 static string osxFontPathByName( string fontname ){
-	CFStringRef targetName = CFStringCreateWithCString(NULL, fontname.c_str(), kCFStringEncodingUTF8);
-	CTFontDescriptorRef targetDescriptor = CTFontDescriptorCreateWithNameAndSize(targetName, 0.0);
-	CFURLRef targetURL = (CFURLRef) CTFontDescriptorCopyAttribute(targetDescriptor, kCTFontURLAttribute);
-	string fontPath = "";
-	
-	if (targetURL) {
-		UInt8 buffer[PATH_MAX];
-		CFURLGetFileSystemRepresentation(targetURL, true, buffer, PATH_MAX);
-		fontPath = string((char *)buffer);
-		CFRelease(targetURL);
-	}
-	
-	CFRelease(targetName);
-	CFRelease(targetDescriptor);
+  CFStringRef targetName = CFStringCreateWithCString(NULL, fontname.c_str(), kCFStringEncodingUTF8);
+  CTFontDescriptorRef targetDescriptor = CTFontDescriptorCreateWithNameAndSize(targetName, 0.0);
+  CFURLRef targetURL = (CFURLRef) CTFontDescriptorCopyAttribute(targetDescriptor, kCTFontURLAttribute);
+  string fontPath = "";
   
-	return fontPath;
+  if (targetURL) {
+    UInt8 buffer[PATH_MAX];
+    CFURLGetFileSystemRepresentation(targetURL, true, buffer, PATH_MAX);
+    fontPath = string((char *)buffer);
+    CFRelease(targetURL);
+  }
+  
+  CFRelease(targetName);
+  CFRelease(targetDescriptor);
+  
+  return fontPath;
 }
 #endif
 
@@ -286,50 +286,50 @@ static string osxFontPathByName( string fontname ){
 static map<string, string> fonts_table;
 // read font linking information from registry, and store in std::map
 void initWindows(){
-	LONG l_ret;
+  LONG l_ret;
   
-	const wchar_t *Fonts = L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts";
+  const wchar_t *Fonts = L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts";
   
-	HKEY key_ft;
-	l_ret = RegOpenKeyExW(HKEY_LOCAL_MACHINE, Fonts, 0, KEY_QUERY_VALUE, &key_ft);
-	if (l_ret != ERROR_SUCCESS) {
+  HKEY key_ft;
+  l_ret = RegOpenKeyExW(HKEY_LOCAL_MACHINE, Fonts, 0, KEY_QUERY_VALUE, &key_ft);
+  if (l_ret != ERROR_SUCCESS) {
     ofLogError("ofxTrueTypeFontUC") << "initWindows(): couldn't find fonts registery key";
     return;
-	}
+  }
   
-	DWORD value_count;
-	DWORD max_data_len;
-	wchar_t value_name[2048];
-	BYTE *value_data;
+  DWORD value_count;
+  DWORD max_data_len;
+  wchar_t value_name[2048];
+  BYTE *value_data;
   
   
-	// get font_file_name -> font_face mapping from the "Fonts" registry key
+  // get font_file_name -> font_face mapping from the "Fonts" registry key
   
-	l_ret = RegQueryInfoKeyW(key_ft, NULL, NULL, NULL, NULL, NULL, NULL, &value_count, NULL, &max_data_len, NULL, NULL);
-	if (l_ret != ERROR_SUCCESS) {
+  l_ret = RegQueryInfoKeyW(key_ft, NULL, NULL, NULL, NULL, NULL, NULL, &value_count, NULL, &max_data_len, NULL, NULL);
+  if (l_ret != ERROR_SUCCESS) {
     ofLogError("ofxTrueTypeFontUC") << "initWindows(): couldn't query registery for fonts";
     return;
-	}
+  }
   
-	// no font installed
-	if (value_count == 0) {
+  // no font installed
+  if (value_count == 0) {
     ofLogError("ofxTrueTypeFontUC") << "initWindows(): couldn't find any fonts in registery";
     return;
-	}
+  }
   
-	// max_data_len is in BYTE
-	value_data = static_cast<BYTE *>(HeapAlloc(GetProcessHeap(), HEAP_GENERATE_EXCEPTIONS, max_data_len));
-	if (value_data == NULL) return;
+  // max_data_len is in BYTE
+  value_data = static_cast<BYTE *>(HeapAlloc(GetProcessHeap(), HEAP_GENERATE_EXCEPTIONS, max_data_len));
+  if (value_data == NULL) return;
   
-	char value_name_char[2048];
-	char value_data_char[2048];
-	/*char ppidl[2048];
+  char value_name_char[2048];
+  char value_data_char[2048];
+  /*char ppidl[2048];
    char fontsPath[2048];
    SHGetKnownFolderIDList(FOLDERID_Fonts, 0, NULL, &ppidl);
    SHGetPathFromIDList(ppidl,&fontsPath);*/
   string fontsDir = getenv ("windir");
   fontsDir += "\\Fonts\\";
-	for (DWORD i = 0; i < value_count; ++i) {
+  for (DWORD i = 0; i < value_count; ++i) {
     DWORD name_len = 2048;
     DWORD data_len = max_data_len;
     
@@ -345,11 +345,11 @@ void initWindows(){
     string font_file = value_data_char;
     curr_face = curr_face.substr(0, curr_face.find('(') - 1);
     fonts_table[curr_face] = fontsDir + font_file;
-	}
+  }
   
-	HeapFree(GetProcessHeap(), 0, value_data);
+  HeapFree(GetProcessHeap(), 0, value_data);
   
-	l_ret = RegCloseKey(key_ft);
+  l_ret = RegCloseKey(key_ft);
 }
 
 
@@ -367,95 +367,95 @@ static string winFontPathByName( string fontname ){
 
 #ifdef TARGET_LINUX
 static string linuxFontPathByName(string fontname){
-	string filename;
-	FcPattern * pattern = FcNameParse((const FcChar8*)fontname.c_str());
-	FcBool ret = FcConfigSubstitute(0,pattern,FcMatchPattern);
-	if (!ret) {
-		ofLogError() << "linuxFontPathByName(): couldn't find font file or system font with name \"" << fontname << "\"";
-		return "";
-	}
-	FcDefaultSubstitute(pattern);
-	FcResult result;
-	FcPattern * fontMatch=NULL;
-	fontMatch = FcFontMatch(0,pattern,&result);
+  string filename;
+  FcPattern * pattern = FcNameParse((const FcChar8*)fontname.c_str());
+  FcBool ret = FcConfigSubstitute(0,pattern,FcMatchPattern);
+  if (!ret) {
+    ofLogError() << "linuxFontPathByName(): couldn't find font file or system font with name \"" << fontname << "\"";
+    return "";
+  }
+  FcDefaultSubstitute(pattern);
+  FcResult result;
+  FcPattern * fontMatch=NULL;
+  fontMatch = FcFontMatch(0,pattern,&result);
   
-	if (!fontMatch) {
-		ofLogError() << "linuxFontPathByName(): couldn't match font file or system font with name \"" << fontname << "\"";
-		return "";
-	}
-	FcChar8	*file;
-	if (FcPatternGetString (fontMatch, FC_FILE, 0, &file) == FcResultMatch) {
-		filename = (const char*)file;
-	}
+  if (!fontMatch) {
+    ofLogError() << "linuxFontPathByName(): couldn't match font file or system font with name \"" << fontname << "\"";
+    return "";
+  }
+  FcChar8 *file;
+  if (FcPatternGetString (fontMatch, FC_FILE, 0, &file) == FcResultMatch) {
+    filename = (const char*)file;
+  }
   else {
-		ofLogError() << "linuxFontPathByName(): couldn't find font match for \"" << fontname << "\"";
-		return "";
-	}
-	return filename;
+    ofLogError() << "linuxFontPathByName(): couldn't find font match for \"" << fontname << "\"";
+    return "";
+  }
+  return filename;
 }
 #endif
 
 bool ofxTrueTypeFontUC::Impl::initLibraries(){
-	if (!librariesInitialized) {
+  if (!librariesInitialized) {
     FT_Error err;
     err = FT_Init_FreeType( &library );
     
     if (err) {
-			ofLogError("ofxTrueTypeFontUC") << "loadFont(): couldn't initialize Freetype lib: FT_Error " << err;
-			return false;
-		}
+      ofLogError("ofxTrueTypeFontUC") << "loadFont(): couldn't initialize Freetype lib: FT_Error " << err;
+      return false;
+    }
 #ifdef TARGET_LINUX
-		FcBool result = FcInit();
-		if (!result) {
-			return false;
-		}
+    FcBool result = FcInit();
+    if (!result) {
+      return false;
+    }
 #endif
 #ifdef TARGET_WIN32
-		initWindows();
+    initWindows();
 #endif
-		librariesInitialized = true;
-	}
+    librariesInitialized = true;
+  }
   return true;
 }
 
 void ofxTrueTypeFontUC::Impl::finishLibraries(){
-	if (librariesInitialized) {
+  if (librariesInitialized) {
 #ifdef TARGET_LINUX
-		//FcFini();
+    //FcFini();
 #endif
-		FT_Done_FreeType(library);
-	}
+    FT_Done_FreeType(library);
+  }
 }
 
 
 //------------------------------------------------------------------
 ofxTrueTypeFontUC::ofxTrueTypeFontUC(){
   mImpl = new Impl();
-	mImpl->bLoadedOk = false;
-	mImpl->bMakeContours	= false;
+  mImpl->bLoadedOk = false;
+  mImpl->bMakeContours = false;
   
 #if defined(TARGET_ANDROID) || defined(TARGET_OF_IOS)
   mImpl->all_fonts().insert(this);
 #endif
-	mImpl->letterSpacing = 1;
-	mImpl->spaceSize = 1;
+  mImpl->letterSpacing = 1;
+  mImpl->spaceSize = 1;
   
-	// 3 pixel border around the glyph
-	// We show 2 pixels of this, so that blending looks good.
-	// 1 pixels is hidden because we don't want to see the real edge of the texture
+  // 3 pixel border around the glyph
+  // We show 2 pixels of this, so that blending looks good.
+  // 1 pixels is hidden because we don't want to see the real edge of the texture
   
-	mImpl->border = 3;
-
-	mImpl->stringQuads.setMode(OF_PRIMITIVE_TRIANGLES);
-	mImpl->binded = false;
+  mImpl->border = 3;
+  
+  mImpl->stringQuads.setMode(OF_PRIMITIVE_TRIANGLES);
+  mImpl->binded = false;
 }
 
 //------------------------------------------------------------------
 ofxTrueTypeFontUC::~ofxTrueTypeFontUC(){
   
-	if (mImpl->bLoadedOk) {
-		mImpl->unloadTextures();
-	}
+  if (mImpl->bLoadedOk) {
+    mImpl->unloadTextures();
+  }
   
 #if defined(TARGET_ANDROID) || defined(TARGET_OF_IOS)
   mImpl->all_fonts().erase(this);
@@ -466,116 +466,120 @@ ofxTrueTypeFontUC::~ofxTrueTypeFontUC(){
 }
 
 void ofxTrueTypeFontUC::Impl::unloadTextures(){
-	if(!bLoadedOk) return;
+  if (!bLoadedOk) return;
   
-	texAtlas.clear();
+  texAtlas.clear();
   charOutlines.clear();
   charOutlinesNonVFlipped.clear();
   loadedChars.clear();
   cps.clear();
   
-	bLoadedOk = false;
+  bLoadedOk = false;
 }
 
 void ofxTrueTypeFontUC::reloadFont(){
-	loadFont(mImpl->filename, mImpl->fontSize, mImpl->bAntiAliased, mImpl->bMakeContours, mImpl->simplifyAmt, mImpl->dpi);
+  loadFont(mImpl->filename, mImpl->fontSize, mImpl->bAntiAliased, mImpl->bMakeContours, mImpl->simplifyAmt, mImpl->dpi);
 }
 
 static bool loadFontFace(string fontname, int _fontSize, FT_Face & face, string & filename){
-	filename = ofToDataPath(fontname,true);
-	ofFile fontFile(filename, ofFile::Reference);
-	int fontID = 0;
-	if(!fontFile.exists()){
+  filename = ofToDataPath(fontname,true);
+  ofFile fontFile(filename, ofFile::Reference);
+  int fontID = 0;
+  if (!fontFile.exists()) {
 #ifdef TARGET_LINUX
-		filename = linuxFontPathByName(fontname);
+    filename = linuxFontPathByName(fontname);
 #elif defined(TARGET_OSX)
-		if(fontname==OF_TTFUC_SANS){
-			fontname = "Helvetica Neue";
-			fontID = 4;
-		}else if(fontname==OF_TTFUC_SERIF){
-			fontname = "Times New Roman";
-		}else if(fontname==OF_TTFUC_MONO){
-			fontname = "Menlo Regular";
-		}
-		filename = osxFontPathByName(fontname);
+    if (fontname==OF_TTFUC_SANS) {
+      fontname = "Helvetica Neue";
+      fontID = 4;
+    }
+    else if (fontname==OF_TTFUC_SERIF) {
+      fontname = "Times New Roman";
+    }
+    else if (fontname==OF_TTFUC_MONO) {
+      fontname = "Menlo Regular";
+    }
+    filename = osxFontPathByName(fontname);
 #elif defined(TARGET_WIN32)
-		if(fontname==OF_TTFUC_SANS){
-			fontname = "Arial";
-		}else if(fontname==OF_TTFUC_SERIF){
-			fontname = "Times New Roman";
-		}else if(fontname==OF_TTFUC_MONO){
-			fontname = "Courier New";
-		}
+    if (fontname==OF_TTFUC_SANS) {
+      fontname = "Arial";
+    }
+    else if (fontname==OF_TTFUC_SERIF) {
+      fontname = "Times New Roman";
+    }
+    else if (fontname==OF_TTFUC_MONO) {
+      fontname = "Courier New";
+    }
     filename = winFontPathByName(fontname);
 #endif
-		if(filename == "" ){
-			ofLogError("ofxTrueTypeFontUC") << "loadFontFace(): couldn't find font \"" << fontname << "\"";
-			return false;
-		}
-		ofLogVerbose("ofxTrueTypeFontUC") << "loadFontFace(): \"" << fontname << "\" not a file in data loading system font from \"" << filename << "\"";
-	}
-	FT_Error err;
-	err = FT_New_Face( library, filename.c_str(), fontID, &face );
-	if (err) {
-		// simple error table in lieu of full table (see fterrors.h)
-		string errorString = "unknown freetype";
-		if(err == 1) errorString = "INVALID FILENAME";
-		ofLogError("ofxTrueTypeFontUC") << "loadFontFace(): couldn't create new face for \"" << fontname << "\": FT_Error " << err << " " << errorString;
-		return false;
-	}
+    if (filename == "" ) {
+      ofLogError("ofxTrueTypeFontUC") << "loadFontFace(): couldn't find font \"" << fontname << "\"";
+      return false;
+    }
+    ofLogVerbose("ofxTrueTypeFontUC") << "loadFontFace(): \"" << fontname << "\" not a file in data loading system font from \"" << filename << "\"";
+  }
+  FT_Error err;
+  err = FT_New_Face( library, filename.c_str(), fontID, &face );
+  if (err) {
+    // simple error table in lieu of full table (see fterrors.h)
+    string errorString = "unknown freetype";
+    if(err == 1) errorString = "INVALID FILENAME";
+    ofLogError("ofxTrueTypeFontUC") << "loadFontFace(): couldn't create new face for \"" << fontname << "\": FT_Error " << err << " " << errorString;
+    return false;
+  }
   
-	return true;
+  return true;
 }
 
 //-----------------------------------------------------------
 bool ofxTrueTypeFontUC::loadFont(const string &_filename, int _fontSize, bool _bAntiAliased, bool _makeContours, float _simplifyAmt, int _dpi){
-	mImpl->initLibraries();
+  mImpl->initLibraries();
   
-	//------------------------------------------------
-	if (mImpl->bLoadedOk == true) {
-		// we've already been loaded, try to clean up :
-		mImpl->unloadTextures();
-	}
-	//------------------------------------------------
+  //------------------------------------------------
+  if (mImpl->bLoadedOk == true) {
+    // we've already been loaded, try to clean up :
+    mImpl->unloadTextures();
+  }
+  //------------------------------------------------
   
-	if ( _dpi == 0 ) {
-		_dpi = ttfGlobalDpi;
-	}
+  if (_dpi == 0) {
+    _dpi = ttfGlobalDpi;
+  }
   
-	mImpl->bLoadedOk = false;
-	mImpl->bAntiAliased = _bAntiAliased;
-	mImpl->fontSize = _fontSize;
-	mImpl->bMakeContours = _makeContours;
-	mImpl->simplifyAmt = _simplifyAmt;
-	mImpl->dpi = _dpi;
+  mImpl->bLoadedOk = false;
+  mImpl->bAntiAliased = _bAntiAliased;
+  mImpl->fontSize = _fontSize;
+  mImpl->bMakeContours = _makeContours;
+  mImpl->simplifyAmt = _simplifyAmt;
+  mImpl->dpi = _dpi;
   
   mImpl->encoding = OF_ENCODING_UTF8;
   
-	//--------------- load the library and typeface
-	if (!loadFontFace(_filename, _fontSize, face, mImpl->filename)) {
+  //--------------- load the library and typeface
+  if (!loadFontFace(_filename, _fontSize, face, mImpl->filename)) {
     return false;
-	}
+  }
   
   
-	FT_Set_Char_Size( face, mImpl->fontSize << 6, mImpl->fontSize << 6, mImpl->dpi, mImpl->dpi);
-	mImpl->lineHeight = mImpl->fontSize * 1.43f;
+  FT_Set_Char_Size( face, mImpl->fontSize << 6, mImpl->fontSize << 6, mImpl->dpi, mImpl->dpi);
+  mImpl->lineHeight = mImpl->fontSize * 1.43f;
   
-	//------------------------------------------------------
-	//kerning would be great to support:
-	//ofLogNotice("ofxTrueTypeFontUC") << "FT_HAS_KERNING ? " <<  FT_HAS_KERNING(face);
-	//------------------------------------------------------
+  //------------------------------------------------------
+  //kerning would be great to support:
+  //ofLogNotice("ofxTrueTypeFontUC") << "FT_HAS_KERNING ? " <<  FT_HAS_KERNING(face);
+  //------------------------------------------------------
   
-	if (mImpl->bMakeContours) {
-		mImpl->charOutlines.clear();
+  if (mImpl->bMakeContours) {
+    mImpl->charOutlines.clear();
   }
   
   // ------------- get default space size
-	unsigned int charID = mImpl->getCharID('p');
+  unsigned int charID = mImpl->getCharID('p');
   mImpl->loadChar(charID);
   
   // ------------- close the library and typeface
   mImpl->bLoadedOk = true;
-	return true;
+  return true;
 }
 
 bool ofxTrueTypeFontUC::Impl::loadChar(const unsigned int &charID){
@@ -645,18 +649,18 @@ bool ofxTrueTypeFontUC::Impl::loadChar(const unsigned int &charID){
   cps[charID].tW = width;
   cps[charID].tH = height;
   
-  GLint fheight	= cps[charID].height;
+  GLint fheight = cps[charID].height;
   GLint bwidth = cps[charID].width;
-  GLint top	= cps[charID].topExtent - cps[charID].height;
-  GLint lextent	= cps[charID].leftExtent;
+  GLint top = cps[charID].topExtent - cps[charID].height;
+  GLint lextent = cps[charID].leftExtent;
   
-  GLfloat	corr, stretch;
+  GLfloat corr, stretch;
   
   //this accounts for the fact that we are showing 2*visibleBorder extra pixels
   //so we make the size of each char that many pixels bigger
   stretch = 0;//(float)(visibleBorder * 2);
   
-  corr	= (float)(( (fontSize - fheight) + top) - fontSize);
+  corr = (float)(( (fontSize - fheight) + top) - fontSize);
   
   cps[charID].x1 = lextent + bwidth + stretch;
   cps[charID].y1 = fheight + corr + stretch;
@@ -672,7 +676,7 @@ bool ofxTrueTypeFontUC::Impl::loadChar(const unsigned int &charID){
   expanded_data.set(1,0);
   
   
-  if (bAntiAliased == true){
+  if (bAntiAliased == true) {
     ofPixels bitmapPixels;
     bitmapPixels.setFromExternalPixels(bitmap.buffer, bitmap.width, bitmap.rows, 1);
     expanded_data.setChannel(1, bitmapPixels);
@@ -683,13 +687,13 @@ bool ofxTrueTypeFontUC::Impl::loadChar(const unsigned int &charID){
     // 1-bit format, hella funky
     // here we unpack it:
     unsigned char *src =  bitmap.buffer;
-    for(int j=0; j <bitmap.rows;j++) {
+    for (int j=0; j <bitmap.rows;j++) {
       unsigned char b=0;
       unsigned char *bptr =  src;
-      for(int k=0; k < bitmap.width ; k++){
+      for (int k=0; k < bitmap.width ; k++) {
         expanded_data[2*(k+j*width)] = 255;
         
-        if (k%8==0){
+        if (k%8==0) {
           b = (*bptr++);
         }
         
@@ -703,25 +707,25 @@ bool ofxTrueTypeFontUC::Impl::loadChar(const unsigned int &charID){
   
   
   // pack in a texture, algorithm to calculate min w/h from
-	// http://upcommons.upc.edu/pfc/bitstream/2099.1/7720/1/TesiMasterJonas.pdf
-	//ofLogNotice("ofTrueTypeFont") << "loadFont(): areaSum: " << areaSum
-	float alpha = logf((cps[charID].width+border*2) * (cps[charID].height+border*2)) * 1.44269;
+  // http://upcommons.upc.edu/pfc/bitstream/2099.1/7720/1/TesiMasterJonas.pdf
+  //ofLogNotice("ofTrueTypeFont") << "loadFont(): areaSum: " << areaSum
+  float alpha = logf((cps[charID].width+border*2) * (cps[charID].height+border*2)) * 1.44269;
   
-	int w = width + 2 * border;
-	int h = height + 2 * border;
+  int w = width + 2 * border;
+  int h = height + 2 * border;
   
-	ofPixels atlasPixelsLuminanceAlpha;
-	atlasPixelsLuminanceAlpha.allocate(w, h, 2);
-	atlasPixelsLuminanceAlpha.set(0, 255);
-	atlasPixelsLuminanceAlpha.set(1, 0);
+  ofPixels atlasPixelsLuminanceAlpha;
+  atlasPixelsLuminanceAlpha.allocate(w, h, 2);
+  atlasPixelsLuminanceAlpha.set(0, 255);
+  atlasPixelsLuminanceAlpha.set(1, 0);
   
   
   int x=0;
-	int y=0;
-	int maxRowHeight = cps[charID].tH + border * 2;
+  int y=0;
+  int maxRowHeight = cps[charID].tH + border * 2;
   ofPixels & charPixels = expanded_data;
   
-  if(x+cps[charID].tW + border*2>w){
+  if (x+cps[charID].tW + border*2>w) {
     x = 0;
     y += maxRowHeight;
     maxRowHeight = cps[charID].tH + border * 2;
@@ -733,72 +737,72 @@ bool ofxTrueTypeFontUC::Impl::loadChar(const unsigned int &charID){
   cps[charID].v1 = float(cps[charID].tH + y + border) / float(h);
   charPixels.pasteInto(atlasPixelsLuminanceAlpha,x+border,y+border);
   
-	ofPixels atlasPixels;
-	atlasPixels.allocate(atlasPixelsLuminanceAlpha.getWidth(),atlasPixelsLuminanceAlpha.getHeight(),4);
-	atlasPixels.setChannel(0,atlasPixelsLuminanceAlpha.getChannel(0));
-	atlasPixels.setChannel(1,atlasPixelsLuminanceAlpha.getChannel(0));
-	atlasPixels.setChannel(2,atlasPixelsLuminanceAlpha.getChannel(0));
-	atlasPixels.setChannel(3,atlasPixelsLuminanceAlpha.getChannel(1));
-	texAtlas[charID].allocate(atlasPixels,false);
+  ofPixels atlasPixels;
+  atlasPixels.allocate(atlasPixelsLuminanceAlpha.getWidth(),atlasPixelsLuminanceAlpha.getHeight(),4);
+  atlasPixels.setChannel(0,atlasPixelsLuminanceAlpha.getChannel(0));
+  atlasPixels.setChannel(1,atlasPixelsLuminanceAlpha.getChannel(0));
+  atlasPixels.setChannel(2,atlasPixelsLuminanceAlpha.getChannel(0));
+  atlasPixels.setChannel(3,atlasPixelsLuminanceAlpha.getChannel(1));
+  texAtlas[charID].allocate(atlasPixels,false);
   
-	if (bAntiAliased && fontSize>20) {
-		texAtlas[charID].setTextureMinMagFilter(GL_LINEAR,GL_LINEAR);
-	}
+  if (bAntiAliased && fontSize>20) {
+    texAtlas[charID].setTextureMinMagFilter(GL_LINEAR,GL_LINEAR);
+  }
   else {
-		texAtlas[charID].setTextureMinMagFilter(GL_NEAREST,GL_NEAREST);
-	}
-	texAtlas[charID].loadData(atlasPixels);
+    texAtlas[charID].setTextureMinMagFilter(GL_NEAREST,GL_NEAREST);
+  }
+  texAtlas[charID].loadData(atlasPixels);
   
-	return true;
+  return true;
 }
 
-ofTextEncoding ofxTrueTypeFontUC::getEncoding() const {
-	return mImpl->encoding;
-}
-
-//-----------------------------------------------------------
-bool ofxTrueTypeFontUC::isLoaded() {
-	return mImpl->bLoadedOk;
+ofTextEncoding ofxTrueTypeFontUC::getEncoding() const{
+  return mImpl->encoding;
 }
 
 //-----------------------------------------------------------
-bool ofxTrueTypeFontUC::isAntiAliased() {
-	return mImpl->bAntiAliased;
+bool ofxTrueTypeFontUC::isLoaded(){
+  return mImpl->bLoadedOk;
 }
 
 //-----------------------------------------------------------
-int ofxTrueTypeFontUC::getSize() {
-	return mImpl->fontSize;
+bool ofxTrueTypeFontUC::isAntiAliased(){
+  return mImpl->bAntiAliased;
 }
 
 //-----------------------------------------------------------
-void ofxTrueTypeFontUC::setLineHeight(float _newLineHeight) {
-	mImpl->lineHeight = _newLineHeight;
+int ofxTrueTypeFontUC::getSize(){
+  return mImpl->fontSize;
+}
+
+//-----------------------------------------------------------
+void ofxTrueTypeFontUC::setLineHeight(float _newLineHeight){
+  mImpl->lineHeight = _newLineHeight;
 }
 
 //-----------------------------------------------------------
 float ofxTrueTypeFontUC::getLineHeight(){
-	return mImpl->lineHeight;
+  return mImpl->lineHeight;
 }
 
 //-----------------------------------------------------------
-void ofxTrueTypeFontUC::setLetterSpacing(float _newletterSpacing) {
-	mImpl->letterSpacing = _newletterSpacing;
+void ofxTrueTypeFontUC::setLetterSpacing(float _newletterSpacing){
+  mImpl->letterSpacing = _newletterSpacing;
 }
 
 //-----------------------------------------------------------
 float ofxTrueTypeFontUC::getLetterSpacing(){
-	return mImpl->letterSpacing;
+  return mImpl->letterSpacing;
 }
 
 //-----------------------------------------------------------
-void ofxTrueTypeFontUC::setSpaceSize(float _newspaceSize) {
-	mImpl->spaceSize = _newspaceSize;
+void ofxTrueTypeFontUC::setSpaceSize(float _newspaceSize){
+  mImpl->spaceSize = _newspaceSize;
 }
 
 //-----------------------------------------------------------
 float ofxTrueTypeFontUC::getSpaceSize(){
-	return mImpl->spaceSize;
+  return mImpl->spaceSize;
 }
 
 //------------------------------------------------------------------
@@ -814,8 +818,8 @@ unsigned int ofxTrueTypeFontUC::Impl::getCharID(const unsigned int &utf32_codepo
     }
   }
   
-  if(bMakeContours){
-		charOutlines.push_back(ofPath());
+  if (bMakeContours) {
+    charOutlines.push_back(ofPath());
     charOutlinesNonVFlipped.push_back(ofPath());
   }
   
@@ -828,10 +832,10 @@ unsigned int ofxTrueTypeFontUC::Impl::getCharID(const unsigned int &utf32_codepo
 
 //------------------------------------------------------------------
 ofPath ofxTrueTypeFontUC::Impl::getCharacterAsPoints(const unsigned int &charID, bool vflip){
-	if ( bMakeContours == false ) {
-		ofLogError("ofxTrueTypeFontUC") << "getCharacterAsPoints(): contours not created, call loadFont() with makeContours set to true";
-		return ofPath();
-	}
+  if (bMakeContours == false) {
+    ofLogError("ofxTrueTypeFontUC") << "getCharacterAsPoints(): contours not created, call loadFont() with makeContours set to true";
+    return ofPath();
+  }
   
   if (vflip) {
     return charOutlines[charID];
@@ -843,72 +847,72 @@ ofPath ofxTrueTypeFontUC::Impl::getCharacterAsPoints(const unsigned int &charID,
 
 //-----------------------------------------------------------
 void ofxTrueTypeFontUC::Impl::drawChar(const unsigned int &charID, float x, float y) {
-	GLfloat	x1, y1, x2, y2;
-	GLfloat t1, v1, t2, v2;
-	t2		= cps[charID].t2;
-	v2		= cps[charID].v2;
-	t1		= cps[charID].t1;
-	v1		= cps[charID].v1;
+  GLfloat x1, y1, x2, y2;
+  GLfloat t1, v1, t2, v2;
+  t2 = cps[charID].t2;
+  v2 = cps[charID].v2;
+  t1 = cps[charID].t1;
+  v1 = cps[charID].v1;
   
-	x1		= cps[charID].x1+x;
-	y1		= cps[charID].y1;
-	x2		= cps[charID].x2+x;
-	y2		= cps[charID].y2;
+  x1 = cps[charID].x1+x;
+  y1 = cps[charID].y1;
+  x2 = cps[charID].x2+x;
+  y2 = cps[charID].y2;
   
-	int firstIndex = stringQuads.getVertices().size();
+  int firstIndex = stringQuads.getVertices().size();
   
-	if(!ofIsVFlipped()){
+  if(!ofIsVFlipped()){
     y1 *= -1;
     y2 *= -1;
-	}
+  }
   
   y1 += y;
   y2 += y;
   
-	stringQuads.addVertex(ofVec3f(x1, y1));
-	stringQuads.addVertex(ofVec3f(x2, y1));
-	stringQuads.addVertex(ofVec3f(x2, y2));
-	stringQuads.addVertex(ofVec3f(x1, y2));
+  stringQuads.addVertex(ofVec3f(x1, y1));
+  stringQuads.addVertex(ofVec3f(x2, y1));
+  stringQuads.addVertex(ofVec3f(x2, y2));
+  stringQuads.addVertex(ofVec3f(x1, y2));
   
-	stringQuads.addTexCoord(ofVec2f(t1, v1));
-	stringQuads.addTexCoord(ofVec2f(t2, v1));
-	stringQuads.addTexCoord(ofVec2f(t2, v2));
-	stringQuads.addTexCoord(ofVec2f(t1, v2));
+  stringQuads.addTexCoord(ofVec2f(t1, v1));
+  stringQuads.addTexCoord(ofVec2f(t2, v1));
+  stringQuads.addTexCoord(ofVec2f(t2, v2));
+  stringQuads.addTexCoord(ofVec2f(t1, v2));
   
-	stringQuads.addIndex(firstIndex);
-	stringQuads.addIndex(firstIndex + 1);
-	stringQuads.addIndex(firstIndex + 2);
-	stringQuads.addIndex(firstIndex + 2);
-	stringQuads.addIndex(firstIndex + 3);
-	stringQuads.addIndex(firstIndex);
+  stringQuads.addIndex(firstIndex);
+  stringQuads.addIndex(firstIndex + 1);
+  stringQuads.addIndex(firstIndex + 2);
+  stringQuads.addIndex(firstIndex + 2);
+  stringQuads.addIndex(firstIndex + 3);
+  stringQuads.addIndex(firstIndex);
 }
 
 //-----------------------------------------------------------
 vector<ofPath> ofxTrueTypeFontUC::getStringAsPoints(const string &utf8_src, bool vflip){
-	vector<ofPath> shapes;
+  vector<ofPath> shapes;
   
-	if (!mImpl->bLoadedOk){
-		ofLogError("ofxTrueTypeFontUC") << "getStringAsPoints(): font not allocated: line " << __LINE__ << " in " << __FILE__;
-		return shapes;
-	};
+  if (!mImpl->bLoadedOk) {
+    ofLogError("ofxTrueTypeFontUC") << "getStringAsPoints(): font not allocated: line " << __LINE__ << " in " << __FILE__;
+    return shapes;
+  };
   
-	GLint	index	= 0;
-	GLfloat X = 0;
-	GLfloat Y = 0;
-	int newLineDirection = 1;
+  GLint index = 0;
+  GLfloat X = 0;
+  GLfloat Y = 0;
+  int newLineDirection = 1;
   
-	if(vflip){
-		// this would align multiline texts to the last line when vflip is disabled
-		//int lines = ofStringTimesInString(c,"\n");
-		//Y = lines*lineHeight;
-		newLineDirection = -1;
-	}
+  if (vflip) {
+    // this would align multiline texts to the last line when vflip is disabled
+    //int lines = ofStringTimesInString(c,"\n");
+    //Y = lines*lineHeight;
+    newLineDirection = -1;
+  }
   
-	basic_string<unsigned int> utf32_src = util::ofxTrueTypeFontUC::convUTF8ToUTF32(utf8_src);
-	int len = (int)utf32_src.length();
+  basic_string<unsigned int> utf32_src = util::ofxTrueTypeFontUC::convUTF8ToUTF32(utf8_src);
+  int len = (int)utf32_src.length();
   
-	while(index < len){
-		unsigned int charID = mImpl->getCharID(utf32_src[index]);
+  while (index < len) {
+    unsigned int charID = mImpl->getCharID(utf32_src[index]);
     if (mImpl->cps[charID].character == mImpl->kTypeFaceUnloaded) {
       mImpl->loadChar(charID);
     }
@@ -924,24 +928,24 @@ vector<ofPath> ofxTrueTypeFontUC::getStringAsPoints(const string &utf8_src, bool
       shapes.back().translate(ofPoint(X, Y));
       X += mImpl->cps[charID].setWidth * mImpl->letterSpacing;
     }
-		index++;
-	}
+    index++;
+  }
   
-	return shapes;
+  return shapes;
 }
 
 //-----------------------------------------------------------
 void ofxTrueTypeFontUC::Impl::drawCharAsShape(const unsigned int &charID, float x, float y) {
-	if (ofIsVFlipped()) {
-		ofPath & charRef = charOutlines[charID];
-		charRef.setFilled(ofGetStyle().bFill);
-		charRef.draw(x,y);
-	}
+  if (ofIsVFlipped()) {
+    ofPath & charRef = charOutlines[charID];
+    charRef.setFilled(ofGetStyle().bFill);
+    charRef.draw(x,y);
+  }
   else {
-		ofPath & charRef = charOutlinesNonVFlipped[charID];
-		charRef.setFilled(ofGetStyle().bFill);
-		charRef.draw(x,y);
-	}
+    ofPath & charRef = charOutlinesNonVFlipped[charID];
+    charRef.setFilled(ofGetStyle().bFill);
+    charRef.draw(x,y);
+  }
 }
 
 //-----------------------------------------------------------
@@ -963,31 +967,31 @@ ofRectangle ofxTrueTypeFontUC::getStringBoundingBox(const string &utf8_src, floa
   basic_string<unsigned int> utf32_src = util::ofxTrueTypeFontUC::convUTF8ToUTF32(utf8_src);
   int len = (int)utf32_src.length();
   
-	GLint		index	= 0;
-	GLfloat		xoffset	= 0;
-	GLfloat		yoffset	= 0;
-  float       minx    = -1;
-  float       miny    = -1;
-  float       maxx    = -1;
-  float       maxy    = -1;
+  GLint index = 0;
+  GLfloat xoffset = 0;
+  GLfloat yoffset = 0;
+  float minx = -1;
+  float miny = -1;
+  float maxx = -1;
+  float maxy = -1;
   
   if ( len < 1 || mImpl->cps.empty() ){
-    myRect.x        = 0;
-    myRect.y        = 0;
-    myRect.width    = 0;
-    myRect.height   = 0;
+    myRect.x = 0;
+    myRect.y = 0;
+    myRect.width = 0;
+    myRect.height = 0;
     return myRect;
   }
   
   bool bFirstCharacter = true;
-	while(index < len){
-		unsigned int charID = mImpl->getCharID(utf32_src[index]);
+  while (index < len) {
+    unsigned int charID = mImpl->getCharID(utf32_src[index]);
     if (mImpl->cps[charID].character == mImpl->kTypeFaceUnloaded) {
       mImpl->loadChar(charID);
     }
     if (utf32_src[index] == (unsigned int)'\n') {
-				yoffset += mImpl->lineHeight;
-				xoffset = 0 ; //reset X Pos back to zero
+      yoffset += mImpl->lineHeight;
+      xoffset = 0 ; //reset X Pos back to zero
     }
     else if (utf32_src[index] == (unsigned int)' ') {
       int pID = mImpl->getCharID((unsigned int)'p');
@@ -998,8 +1002,8 @@ ofRectangle ofxTrueTypeFontUC::getStringBoundingBox(const string &utf8_src, floa
       GLint height = mImpl->cps[charID].height;
       GLint bwidth = mImpl->cps[charID].width * mImpl->letterSpacing;
       GLint top = mImpl->cps[charID].topExtent - mImpl->cps[charID].height;
-      GLint lextent	= mImpl->cps[charID].leftExtent;
-      float	x1, y1, x2, y2, corr, stretch;
+      GLint lextent = mImpl->cps[charID].leftExtent;
+      float x1, y1, x2, y2, corr, stretch;
       stretch = 0;//(float)visibleBorder * 2;
       corr = (float)(((mImpl->fontSize - height) + top) - mImpl->fontSize);
       x1 = (x + xoffset + lextent + bwidth + stretch);
@@ -1032,35 +1036,35 @@ ofRectangle ofxTrueTypeFontUC::getStringBoundingBox(const string &utf8_src, floa
 }
 
 //-----------------------------------------------------------
-float ofxTrueTypeFontUC::stringHeight(const string &c) {
+float ofxTrueTypeFontUC::stringHeight(const string &c){
   ofRectangle rect = getStringBoundingBox(c, 0,0);
   return rect.height;
 }
 
 //=====================================================================
-void ofxTrueTypeFontUC::drawString(const string &utf8_src, float x, float y) {
+void ofxTrueTypeFontUC::drawString(const string &utf8_src, float x, float y){
   if (!mImpl->bLoadedOk) {
     ofLog(OF_LOG_ERROR,"ofxTrueTypeFontUC::drawString - Error : font not allocated -- line %d in %s", __LINE__,__FILE__);
     return;
   };
   
-  GLint		index	= 0;
-	GLfloat		X		= x;
-	GLfloat		Y		= y;
-	int newLineDirection		= 1;
+  GLint index = 0;
+  GLfloat X = x;
+  GLfloat Y = y;
+  int newLineDirection = 1;
   
-	if(!ofIsVFlipped()){
-		// this would align multiline texts to the last line when vflip is disabled
-		//int lines = ofStringTimesInString(c,"\n");
-		//Y = lines*lineHeight;
-		newLineDirection = -1;
-	}
+  if (!ofIsVFlipped()) {
+    // this would align multiline texts to the last line when vflip is disabled
+    //int lines = ofStringTimesInString(c,"\n");
+    //Y = lines*lineHeight;
+    newLineDirection = -1;
+  }
   
   basic_string<unsigned int> utf32_src = util::ofxTrueTypeFontUC::convUTF8ToUTF32(utf8_src);
-	int len = (int)utf32_src.length();
+  int len = (int)utf32_src.length();
   
-	while(index < len){
-		unsigned int charID = mImpl->getCharID(utf32_src[index]);
+  while (index < len) {
+    unsigned int charID = mImpl->getCharID(utf32_src[index]);
     if (mImpl->cps[charID].character == mImpl->kTypeFaceUnloaded) {
       mImpl->loadChar(charID);
     }
@@ -1079,12 +1083,12 @@ void ofxTrueTypeFontUC::drawString(const string &utf8_src, float x, float y) {
       X += mImpl->cps[charID].setWidth * mImpl->letterSpacing;
     }
     
-		index++;
-	}
+    index++;
+  }
 }
 
 //-----------------------------------------------------------
-void ofxTrueTypeFontUC::Impl::bind(const unsigned int &charID) {
+void ofxTrueTypeFontUC::Impl::bind(const unsigned int &charID){
   // we need transparency to draw text, but we don't know
   // if that is set up in outside of this function
   // we "pushAttrib", turn on alpha and "popAttrib"
@@ -1113,52 +1117,52 @@ void ofxTrueTypeFontUC::Impl::bind(const unsigned int &charID) {
 }
 
 //-----------------------------------------------------------
-void ofxTrueTypeFontUC::Impl::unbind(const unsigned int &charID) {
+void ofxTrueTypeFontUC::Impl::unbind(const unsigned int &charID){
   stringQuads.drawFaces();
   texAtlas[charID].unbind();
   
-  if( !blend_enabled )
+  if ( !blend_enabled )
     glDisable(GL_BLEND);
-  if( !texture_2d_enabled )
+  if ( !texture_2d_enabled )
     glDisable(GL_TEXTURE_2D);
   glBlendFunc( blend_src, blend_dst );
 }
 
 //=====================================================================
-void ofxTrueTypeFontUC::drawStringAsShapes(const string &utf8_src, float x, float y) {
+void ofxTrueTypeFontUC::drawStringAsShapes(const string &utf8_src, float x, float y){
   
-  if (!mImpl->bLoadedOk){
+  if (!mImpl->bLoadedOk) {
     ofLogError("ofxTrueTypeFontUC") << "drawStringAsShapes(): font not allocated: line " << __LINE__ << " in " << __FILE__;
     return;
   };
   
-	//----------------------- error checking
-	if (!mImpl->bMakeContours){
-		ofLogError("ofxTrueTypeFontUC") << "drawStringAsShapes(): contours not created for this font, call loadFont() with makeContours set to true";
-		return;
-	}
+  //----------------------- error checking
+  if (!mImpl->bMakeContours) {
+    ofLogError("ofxTrueTypeFontUC") << "drawStringAsShapes(): contours not created for this font, call loadFont() with makeContours set to true";
+    return;
+  }
   
-	GLint		index	= 0;
-	GLfloat		X		= x;
-	GLfloat		Y		= y;
-	int newLineDirection		= 1;
+  GLint index = 0;
+  GLfloat X = x;
+  GLfloat Y = y;
+  int newLineDirection = 1;
   
-	if(!ofIsVFlipped()){
-		// this would align multiline texts to the last line when vflip is disabled
-		//int lines = ofStringTimesInString(c,"\n");
-		//Y = lines*lineHeight;
-		newLineDirection = -1;
-	}
+  if (!ofIsVFlipped()) {
+    // this would align multiline texts to the last line when vflip is disabled
+    //int lines = ofStringTimesInString(c,"\n");
+    //Y = lines*lineHeight;
+    newLineDirection = -1;
+  }
   
-	basic_string<unsigned int> utf32_src = util::ofxTrueTypeFontUC::convUTF8ToUTF32(utf8_src);
-	int len = (int)utf32_src.length();
+  basic_string<unsigned int> utf32_src = util::ofxTrueTypeFontUC::convUTF8ToUTF32(utf8_src);
+  int len = (int)utf32_src.length();
   
-	while(index < len){
+  while (index < len) {
     unsigned int charID = mImpl->getCharID(utf32_src[index]);
     if (mImpl->cps[charID].character == mImpl->kTypeFaceUnloaded) {
       mImpl->loadChar(charID);
     }
-
+    
     if (utf32_src[index] == (unsigned int)'\n') {
       Y += mImpl->lineHeight * newLineDirection;
       X = x ; //reset X Pos back to zero
@@ -1171,72 +1175,73 @@ void ofxTrueTypeFontUC::drawStringAsShapes(const string &utf8_src, float x, floa
       mImpl->drawCharAsShape(charID, X, Y);
       X += mImpl->cps[charID].setWidth * mImpl->letterSpacing;
     }
-		
-		index++;
-	}
+    
+    index++;
+  }
 }
 
 //-----------------------------------------------------------
 int ofxTrueTypeFontUC::getNumCharacters() {
-	return mImpl->loadedChars.size();
+  return mImpl->loadedChars.size();
 }
 
 //===========================================================
 namespace util {
   namespace ofxTrueTypeFontUC {
-    
-    basic_string<unsigned int> convUTF8ToUTF32(const std::string &utf8_src){
-      basic_string<unsigned int> dst;
-      
-      // convert UTF-8 on char or wchar_t to UCS-4 on wchar_t
-      int size = utf8_src.size();
-      int index = 0;
-      while (index < size) {
-        wchar_t c = (unsigned char)utf8_src[index];
-        if (c < 0x80) {
-          dst += (c);
-        }
-        else if (c < 0xe0) {
-          if (index + 1 < size) {
-            dst += (((c & 0x1f) << 6) | (utf8_src[index+1] & 0x3f));
-            index++;
-          }
-        }
-        else if (c < 0xf0) {
-          if (index + 2 < size) {
-            dst += (((c & 0x0f) << 12) | ((utf8_src[index+1] & 0x3f) << 6) |
-                    (utf8_src[index+2] & 0x3f));
-            index += 2;
-          }
-        }
-        else if (c < 0xf8) {
-          if (index + 3 < size) {
-            dst += (((c & 0x07) << 18) | ((utf8_src[index+1] & 0x3f) << 12) |
-                    ((utf8_src[index+2] & 0x3f) << 6) | (utf8_src[index+3] & 0x3f));
-            index += 3;
-          }
-        }
-        else if (c < 0xfc) {
-          if (index + 4 < size) {
-            dst += (((c & 0x03) << 24) | ((utf8_src[index+1] & 0x3f) << 18) |
-                    ((utf8_src[index+2] & 0x3f) << 12) | ((utf8_src[index+3] & 0x3f) << 6) |
-                    (utf8_src[index+4] & 0x3f));
-            index += 4;
-          }
-        }
-        else if (c < 0xfe) {
-          if (index + 5 < size) {
-            dst += (((c & 0x01) << 30) | ((utf8_src[index+1] & 0x3f) << 24) |
-                    ((utf8_src[index+2] & 0x3f) << 18) | ((utf8_src[index+3] & 0x3f) << 12) |
-                    ((utf8_src[index+4] & 0x3f) << 6) | (utf8_src[index+5] & 0x3f));
-            index += 5;
-          }
-        }
+
+basic_string<unsigned int> convUTF8ToUTF32(const std::string &utf8_src){
+  basic_string<unsigned int> dst;
+  
+  // convert UTF-8 on char or wchar_t to UCS-4 on wchar_t
+  int size = utf8_src.size();
+  int index = 0;
+  while (index < size) {
+    wchar_t c = (unsigned char)utf8_src[index];
+    if (c < 0x80) {
+      dst += (c);
+    }
+    else if (c < 0xe0) {
+      if (index + 1 < size) {
+        dst += (((c & 0x1f) << 6) | (utf8_src[index+1] & 0x3f));
         index++;
       }
-      
-      return dst;
     }
+    else if (c < 0xf0) {
+      if (index + 2 < size) {
+        dst += (((c & 0x0f) << 12) | ((utf8_src[index+1] & 0x3f) << 6) |
+                (utf8_src[index+2] & 0x3f));
+        index += 2;
+      }
+    }
+    else if (c < 0xf8) {
+      if (index + 3 < size) {
+        dst += (((c & 0x07) << 18) | ((utf8_src[index+1] & 0x3f) << 12) |
+                ((utf8_src[index+2] & 0x3f) << 6) | (utf8_src[index+3] & 0x3f));
+        index += 3;
+      }
+    }
+    else if (c < 0xfc) {
+      if (index + 4 < size) {
+        dst += (((c & 0x03) << 24) | ((utf8_src[index+1] & 0x3f) << 18) |
+                ((utf8_src[index+2] & 0x3f) << 12) | ((utf8_src[index+3] & 0x3f) << 6) |
+                (utf8_src[index+4] & 0x3f));
+        index += 4;
+      }
+    }
+    else if (c < 0xfe) {
+      if (index + 5 < size) {
+        dst += (((c & 0x01) << 30) | ((utf8_src[index+1] & 0x3f) << 24) |
+                ((utf8_src[index+2] & 0x3f) << 18) | ((utf8_src[index+3] & 0x3f) << 12) |
+                ((utf8_src[index+4] & 0x3f) << 6) | (utf8_src[index+5] & 0x3f));
+        index += 5;
+      }
+    }
+    index++;
+  }
+  
+  return dst;
+}
+
   } // namespace ofxTrueTypeFontUC
 } // namespace util
 
