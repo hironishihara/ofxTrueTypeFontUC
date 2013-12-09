@@ -71,6 +71,6 @@ ofTextEncoding getEncoding()
 void setGlobalDpi(int newDpi)
   
 ##Additional Methods##
-###std::basec_string&lt;unsigned int> util::ofxTrueTypeFontUC::convUTF8ToUTF32(...)###
+###std::basic_string&lt;unsigned int> util::ofxTrueTypeFontUC::convUTF8ToUTF32(...)###
 std::basic_string&lt;unsigned int> util::ofxTrueTypeFontUC::convUTF8ToUTF32(const string &utf8_string)  
 
