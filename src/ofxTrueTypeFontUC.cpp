@@ -39,12 +39,7 @@ typedef struct {
 
 static bool printVectorInfo = false;
 static int ttfGlobalDpi = 96;
-static bool librariesInitialized = false;
 
-typedef struct FT_LibraryRec_ * FT_Library;
-typedef struct FT_FaceRec_ * FT_Face;
-static FT_Library library;
-static FT_Face face;
 
 //========================================================
 class ofxTrueTypeFontUC::Impl {
@@ -71,8 +66,16 @@ public:
   GLboolean texture_2d_enabled;
   ofMesh stringQuads;
   
-  const unsigned int kLimitCharactersNum = 10000;
-  const unsigned int kTypeFaceUnloaded = 0;
+  typedef struct FT_LibraryRec_ * FT_Library;
+  typedef struct FT_FaceRec_ * FT_Face;
+  FT_Library library;
+  FT_Face face;
+  bool librariesInitialized = false;
+  
+  bool loadFontFace(string fontname);
+  
+  static const unsigned int kLimitCharactersNum = 10000;
+  static const unsigned int kTypeFaceUnloaded = 0;
   
   vector<unsigned int> loadedChars;
   vector<charPropsUC> cps;  // properties for each character
@@ -95,8 +98,8 @@ public:
 #endif
   
   void unloadTextures();
-  static bool initLibraries();
-  static void finishLibraries();
+  bool initLibraries();
+  void finishLibraries();
 };
 
 //--------------------------------------------------------
@@ -481,7 +484,7 @@ void ofxTrueTypeFontUC::reloadFont(){
   loadFont(mImpl->filename, mImpl->fontSize, mImpl->bAntiAliased, mImpl->bMakeContours, mImpl->simplifyAmt, mImpl->dpi);
 }
 
-static bool loadFontFace(string fontname, int _fontSize, FT_Face & face, string & filename){
+bool ofxTrueTypeFontUC::Impl::loadFontFace(string fontname){
   filename = ofToDataPath(fontname,true);
   ofFile fontFile(filename, ofFile::Reference);
   int fontID = 0;
@@ -556,12 +559,12 @@ bool ofxTrueTypeFontUC::loadFont(const string &_filename, int _fontSize, bool _b
   mImpl->encoding = OF_ENCODING_UTF8;
   
   //--------------- load the library and typeface
-  if (!loadFontFace(_filename, _fontSize, face, mImpl->filename)) {
+  if (!mImpl->loadFontFace(_filename)) {
     return false;
   }
   
   
-  FT_Set_Char_Size( face, mImpl->fontSize << 6, mImpl->fontSize << 6, mImpl->dpi, mImpl->dpi);
+  FT_Set_Char_Size( mImpl->face, mImpl->fontSize << 6, mImpl->fontSize << 6, mImpl->dpi, mImpl->dpi);
   mImpl->lineHeight = mImpl->fontSize * 1.43f;
   
   //------------------------------------------------------
