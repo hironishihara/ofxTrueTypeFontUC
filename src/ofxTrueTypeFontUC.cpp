@@ -904,7 +904,7 @@ vector<ofPath> ofxTrueTypeFontUC::getStringAsPoints(const string &utf8_src, bool
   GLfloat Y = 0;
   int newLineDirection = 1;
   
-  if (vflip) {
+  if (!vflip) {
     // this would align multiline texts to the last line when vflip is disabled
     //int lines = ofStringTimesInString(c,"\n");
     //Y = lines*lineHeight;
@@ -921,6 +921,7 @@ vector<ofPath> ofxTrueTypeFontUC::getStringAsPoints(const string &utf8_src, bool
     }
     if (utf32_src[index] == (unsigned int)'\n') {
       Y += mImpl->lineHeight * newLineDirection;
+      X = 0;
     }
     else if (utf32_src[index] == (unsigned int)' ') {
       int pID = mImpl->getCharID((unsigned int)'p');
