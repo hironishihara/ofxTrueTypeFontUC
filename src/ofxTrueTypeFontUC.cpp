@@ -998,7 +998,7 @@ ofRectangle ofxTrueTypeFontUC::getStringBoundingBox(const string &utf8_src, floa
       xoffset = 0 ; //reset X Pos back to zero
     }
     else if (utf32_src[index] == (unsigned int)' ') {
-      int pID = mImpl->getCharID((unsigned int)'p');
+      int pID = mImpl->getCharID((unsigned int)' ');
       xoffset += mImpl->cps[pID].setWidth * mImpl->letterSpacing * mImpl->spaceSize;
       // zach - this is a bug to fix -- for now, we don't currently deal with ' ' in calculating string bounding box
     }
