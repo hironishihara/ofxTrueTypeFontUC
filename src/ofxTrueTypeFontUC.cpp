@@ -2,6 +2,7 @@
 //--------------------------
 
 #include "ft2build.h"
+
 #include "freetype2/freetype/freetype.h"
 #include "freetype2/freetype/ftglyph.h"
 #include "freetype2/freetype/ftoutln.h"
@@ -925,7 +926,7 @@ vector<ofPath> ofxTrueTypeFontUC::getStringAsPoints(const string &utf8_src, bool
     }
     else if (utf32_src[index] == (unsigned int)' ') {
       int pID = mImpl->getCharID((unsigned int)'p');
-      X += mImpl->cps[charID].setWidth * mImpl->letterSpacing * mImpl->spaceSize;
+      X += mImpl->cps[pID].setWidth * mImpl->letterSpacing * mImpl->spaceSize;
     }
     else {
       shapes.push_back(mImpl->getCharacterAsPoints(charID, vflip));
@@ -998,7 +999,7 @@ ofRectangle ofxTrueTypeFontUC::getStringBoundingBox(const string &utf8_src, floa
       xoffset = 0 ; //reset X Pos back to zero
     }
     else if (utf32_src[index] == (unsigned int)' ') {
-      int pID = mImpl->getCharID((unsigned int)' ');
+      int pID = mImpl->getCharID((unsigned int)'p');
       xoffset += mImpl->cps[pID].setWidth * mImpl->letterSpacing * mImpl->spaceSize;
       // zach - this is a bug to fix -- for now, we don't currently deal with ' ' in calculating string bounding box
     }
@@ -1078,7 +1079,7 @@ void ofxTrueTypeFontUC::drawString(const string &utf8_src, float x, float y){
     }
     else if (utf32_src[index] == (unsigned int)' ') {
       int pID = mImpl->getCharID((unsigned int)'p');
-      X += mImpl->cps[charID].setWidth * mImpl->letterSpacing * mImpl->spaceSize;
+      X += mImpl->cps[pID].setWidth * mImpl->letterSpacing * mImpl->spaceSize;
     }
     else {
       mImpl->bind(charID);
@@ -1173,7 +1174,7 @@ void ofxTrueTypeFontUC::drawStringAsShapes(const string &utf8_src, float x, floa
     }
     else if (utf32_src[index] == (unsigned int)' ') {
       int pID = mImpl->getCharID((unsigned int)'p');
-      X += mImpl->cps[charID].setWidth * mImpl->letterSpacing * mImpl->spaceSize;
+      X += mImpl->cps[pID].setWidth * mImpl->letterSpacing * mImpl->spaceSize;
     }
     else {
       mImpl->drawCharAsShape(charID, X, Y);
