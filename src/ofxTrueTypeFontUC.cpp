@@ -70,7 +70,7 @@ public:
   typedef struct FT_LibraryRec_ * FT_Library;
   typedef struct FT_FaceRec_ * FT_Face;
   FT_Library library;
-  FT_Face face;
+  vector<FT_Face> faces;
   bool librariesInitialized = false;
   
   bool loadFontFace(string fontname);
@@ -523,7 +523,9 @@ bool ofxTrueTypeFontUC::Impl::loadFontFace(string fontname){
     ofLogVerbose("ofxTrueTypeFontUC") << "loadFontFace(): \"" << fontname << "\" not a file in data loading system font from \"" << filename << "\"";
   }
   FT_Error err;
+  FT_Face face;
   err = FT_New_Face( library, filename.c_str(), fontID, &face );
+  faces.push_back(face);
   if (err) {
     // simple error table in lieu of full table (see fterrors.h)
     string errorString = "unknown freetype";
@@ -565,7 +567,7 @@ bool ofxTrueTypeFontUC::loadFont(const string &_filename, int _fontSize, bool _b
   }
   
   
-  FT_Set_Char_Size( mImpl->face, mImpl->fontSize << 6, mImpl->fontSize << 6, mImpl->dpi, mImpl->dpi);
+  FT_Set_Char_Size( mImpl->faces[mImpl->faces.size()-1], mImpl->fontSize << 6, mImpl->fontSize << 6, mImpl->dpi, mImpl->dpi);
   mImpl->lineHeight = mImpl->fontSize * 1.43f;
   
   //------------------------------------------------------
@@ -587,20 +589,32 @@ bool ofxTrueTypeFontUC::loadFont(const string &_filename, int _fontSize, bool _b
 }
 
 bool ofxTrueTypeFontUC::Impl::loadChar(const unsigned int &charID){
+  int fontIdx = -1;
+  for(int i=0; i<faces.size(); i++) {
+    FT_UInt glyphIdx = FT_Get_Char_Index( faces[i], loadedChars[charID] );
+    if(glyphIdx) {
+      fontIdx = i;
+      break;
+    }
+  }
+  if(fontIdx == -1) {
+    return false;
+  }
+
   //------------------------------------------ anti aliased or not:
-  FT_Error err = FT_Load_Glyph( face, FT_Get_Char_Index( face, loadedChars[charID] ), FT_LOAD_DEFAULT );
+  FT_Error err = FT_Load_Glyph( faces[fontIdx], FT_Get_Char_Index( faces[fontIdx], loadedChars[charID] ), FT_LOAD_DEFAULT );
   if (err) {
     ofLogError("ofxTrueTypeFontUC") << "loadChar(): FT_Load_Glyph failed for code point " << loadedChars[charID] << ": FT_Error " << err;
     return false;
   }
   
   if (bAntiAliased == true)
-    FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
+    FT_Render_Glyph(faces[fontIdx]->glyph, FT_RENDER_MODE_NORMAL);
   else
-    FT_Render_Glyph(face->glyph, FT_RENDER_MODE_MONO);
+    FT_Render_Glyph(faces[fontIdx]->glyph, FT_RENDER_MODE_MONO);
   
   //------------------------------------------
-  FT_Bitmap& bitmap= face->glyph->bitmap;
+  FT_Bitmap& bitmap= faces[fontIdx]->glyph->bitmap;
   
   
   // prepare the texture:
@@ -621,7 +635,7 @@ bool ofxTrueTypeFontUC::Impl::loadChar(const unsigned int &charID){
       ofLogNotice("ofxTrueTypeFontUC") <<  "code point " << loadedChars[charID];
     }
     
-    charOutlines[charID] = makeContoursForCharacter( face );
+    charOutlines[charID] = makeContoursForCharacter( faces[fontIdx] );
     
     charOutlinesNonVFlipped[charID] = charOutlines[charID];
     charOutlinesNonVFlipped[charID].translate(ofVec3f(0,cps[charID].height));
@@ -640,11 +654,11 @@ bool ofxTrueTypeFontUC::Impl::loadChar(const unsigned int &charID){
   // -------------------------
   // info about the character:
   cps[charID].character = loadedChars[charID];
-  cps[charID].height = face->glyph->bitmap_top;
-  cps[charID].width = face->glyph->bitmap.width;
-  cps[charID].setWidth = face->glyph->advance.x >> 6;
-  cps[charID].topExtent = face->glyph->bitmap.rows;
-  cps[charID].leftExtent = face->glyph->bitmap_left;
+  cps[charID].height = faces[fontIdx]->glyph->bitmap_top;
+  cps[charID].width = faces[fontIdx]->glyph->bitmap.width;
+  cps[charID].setWidth = faces[fontIdx]->glyph->advance.x >> 6;
+  cps[charID].topExtent = faces[fontIdx]->glyph->bitmap.rows;
+  cps[charID].leftExtent = faces[fontIdx]->glyph->bitmap_left;
   
   int width = cps[charID].width;
   int height = bitmap.rows;
