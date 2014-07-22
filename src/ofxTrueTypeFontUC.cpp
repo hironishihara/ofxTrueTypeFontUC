@@ -71,7 +71,7 @@ public:
   typedef struct FT_FaceRec_ * FT_Face;
   FT_Library library;
   vector<FT_Face> faces;
-  bool librariesInitialized = false;
+  bool librariesInitialized;
   
   bool loadFontFace(string fontname);
   
@@ -437,6 +437,7 @@ ofxTrueTypeFontUC::ofxTrueTypeFontUC(){
   mImpl = new Impl();
   mImpl->bLoadedOk = false;
   mImpl->bMakeContours = false;
+  mImpl->librariesInitialized = false;
   
 #if defined(TARGET_ANDROID) || defined(TARGET_OF_IOS)
   mImpl->all_fonts().insert(this);
