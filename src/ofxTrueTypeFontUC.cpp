@@ -453,12 +453,12 @@ void ofxTrueTypeFontUC::reloadFont() {
 }
 
 //-----------------------------------------------------------
-bool ofxTrueTypeFontUC::loadFont(string filename, int fontsize, bool _bAntiAliased, bool makeContours, float _simplifyAmt, int _dpi) {
-  return mImpl->implLoadFont(filename, fontsize, _bAntiAliased, makeContours, _simplifyAmt, _dpi);
+bool ofxTrueTypeFontUC::loadFont(string _filename, int fontsize, bool _bAntiAliased, bool makeContours, float _simplifyAmt, int _dpi) {
+  return mImpl->implLoadFont(_filename, fontsize, _bAntiAliased, makeContours, _simplifyAmt, _dpi);
 
 }
 
-bool ofxTrueTypeFontUC::Impl::implLoadFont(string filename, int fontsize, bool bAntiAliased, bool makeContours, float simplifyAmt, int dpi) {  
+bool ofxTrueTypeFontUC::Impl::implLoadFont(string _filename, int fontsize, bool bAntiAliased, bool makeContours, float simplifyAmt, int dpi) {  
   bMakeContours_ = makeContours;
   
   //------------------------------------------------
@@ -473,7 +473,7 @@ bool ofxTrueTypeFontUC::Impl::implLoadFont(string filename, int fontsize, bool b
     dpi_ = ttfGlobalDpi_;
   }
   
-  filename = ofToDataPath(filename);
+  filename = ofToDataPath(_filename);
   
   bLoadedOk_ = false;
   bAntiAliased_ = bAntiAliased;
