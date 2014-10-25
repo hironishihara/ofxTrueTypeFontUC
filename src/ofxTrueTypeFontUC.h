@@ -20,11 +20,11 @@ public:
   bool loadFont(const string &filename, int fontsize, bool bAntiAliased=true, bool makeContours=false, float simplifyAmt=0.3, int dpi=0);
   void reloadFont();
   
-  void drawString(const string &utf8_string, float x, float y);
-  void drawStringAsShapes(const string &utf8_string, float x, float y);
+  void drawString(const string &str, float x, float y);
+  void drawStringAsShapes(const string &str, float x, float y);
   
-  vector<ofPath> getStringAsPoints(const string &utf8_string, bool vflip=ofIsVFlipped());
-  ofRectangle getStringBoundingBox(const string &utf8_string, float x, float y);
+  vector<ofPath> getStringAsPoints(const string &str, bool vflip=ofIsVFlipped());
+  ofRectangle getStringBoundingBox(const string &str, float x, float y);
   
   bool isLoaded();
   bool isAntiAliased();
@@ -36,11 +36,10 @@ public:
   void setLetterSpacing(float spacing);
   float getSpaceSize();
   void setSpaceSize(float size);
-  float stringWidth(const string &utf8_string);
-  float stringHeight(const string &utf8_string);
+  float stringWidth(const string &str);
+  float stringHeight(const string &str);
   // get the num of loaded chars
   int getNumCharacters();
-  ofTextEncoding getEncoding() const;
   // set the default dpi for all typefaces
   static void setGlobalDpi(int newDpi);
   
@@ -52,11 +51,3 @@ private:
   ofxTrueTypeFontUC(const ofxTrueTypeFontUC &);
   void operator=(const ofxTrueTypeFontUC &);
 };
-
-//--------------------------------------------------
-namespace util {
-  namespace ofxTrueTypeFontUC {
-    basic_string<unsigned int> convUTF8ToUTF32(const string & utf8_string);
-  }
-}
-

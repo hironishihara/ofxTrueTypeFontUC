@@ -20,9 +20,90 @@
 #include "ofConstants.h"
 #include "ofTexture.h"
 #include "ofMesh.h"
-#include "Poco/TextConverter.h"
-#include "Poco/UTF8Encoding.h"
 
+
+//===========================================================
+#ifdef TARGET_WIN32
+
+#include <windows.h>
+#include <codecvt>
+
+static const basic_string<unsigned int> convToUTF32(const string &src) {
+  if (src.size() == 0) {
+    return basic_string<unsigned int> ();
+  }
+  
+  // convert XXX -> UTF-16
+  const int n_size = ::MultiByteToWideChar(CP_ACP, 0, src.c_str(), -1, NULL, 0);
+  vector<wchar_t> buffUTF16(n_size);
+  ::MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, &buffUTF16[0], n_size);
+  
+  // convert UTF-16 -> UTF-8
+  const int utf8str_size = ::WideCharToMultiByte(CP_UTF8, 0, &buffUTF16[0], -1, NULL, 0, NULL, 0);
+  vector<char> buffUTF8(utf8str_size);
+  ::WideCharToMultiByte(CP_UTF8, 0, &buffUTF16[0], -1, &buffUTF8[0], utf8str_size, NULL, 0);
+  
+  // convert UTF-8 -> UTF-32 (UCS-4)
+  std::wstring_convert<std::codecvt_utf8<unsigned int>, unsigned int> convert32;
+  return convert32.from_bytes(&buffUTF8[0]);
+}
+
+#else
+
+static const basic_string<unsigned int> convToUTF32(const string &utf8_src){
+  basic_string<unsigned int> dst;
+  
+  // convert UTF-8 -> UTF-32 (UCS-4)
+  int size = utf8_src.size();
+  int index = 0;
+  while (index < size) {
+    wchar_t c = (unsigned char)utf8_src[index];
+    if (c < 0x80) {
+      dst += (c);
+    }
+    else if (c < 0xe0) {
+      if (index + 1 < size) {
+        dst += (((c & 0x1f) << 6) | (utf8_src[index+1] & 0x3f));
+        index++;
+      }
+    }
+    else if (c < 0xf0) {
+      if (index + 2 < size) {
+        dst += (((c & 0x0f) << 12) | ((utf8_src[index+1] & 0x3f) << 6) |
+                (utf8_src[index+2] & 0x3f));
+        index += 2;
+      }
+    }
+    else if (c < 0xf8) {
+      if (index + 3 < size) {
+        dst += (((c & 0x07) << 18) | ((utf8_src[index+1] & 0x3f) << 12) |
+                ((utf8_src[index+2] & 0x3f) << 6) | (utf8_src[index+3] & 0x3f));
+        index += 3;
+      }
+    }
+    else if (c < 0xfc) {
+      if (index + 4 < size) {
+        dst += (((c & 0x03) << 24) | ((utf8_src[index+1] & 0x3f) << 18) |
+                ((utf8_src[index+2] & 0x3f) << 12) | ((utf8_src[index+3] & 0x3f) << 6) |
+                (utf8_src[index+4] & 0x3f));
+        index += 4;
+      }
+    }
+    else if (c < 0xfe) {
+      if (index + 5 < size) {
+        dst += (((c & 0x01) << 30) | ((utf8_src[index+1] & 0x3f) << 24) |
+                ((utf8_src[index+2] & 0x3f) << 18) | ((utf8_src[index+3] & 0x3f) << 12) |
+                ((utf8_src[index+4] & 0x3f) << 6) | (utf8_src[index+5] & 0x3f));
+        index += 5;
+      }
+    }
+    index++;
+  }
+  
+  return dst;
+}
+
+#endif
 
 //--------------------------------------------------
 typedef struct {
@@ -59,7 +140,6 @@ public:
   int border;
   string filename;
   bool binded;
-  ofTextEncoding encoding;
   
   GLint blend_src, blend_dst;
   GLboolean blend_enabled;
@@ -556,8 +636,6 @@ bool ofxTrueTypeFontUC::loadFont(const string &_filename, int _fontSize, bool _b
   mImpl->simplifyAmt = _simplifyAmt;
   mImpl->dpi = _dpi;
   
-  mImpl->encoding = OF_ENCODING_UTF8;
-  
   //--------------- load the library and typeface
   if (!mImpl->loadFontFace(_filename)) {
     return false;
@@ -759,10 +837,6 @@ bool ofxTrueTypeFontUC::Impl::loadChar(const unsigned int &charID){
   return true;
 }
 
-ofTextEncoding ofxTrueTypeFontUC::getEncoding() const{
-  return mImpl->encoding;
-}
-
 //-----------------------------------------------------------
 bool ofxTrueTypeFontUC::isLoaded(){
   return mImpl->bLoadedOk;
@@ -891,7 +965,7 @@ void ofxTrueTypeFontUC::Impl::drawChar(const unsigned int &charID, float x, floa
 }
 
 //-----------------------------------------------------------
-vector<ofPath> ofxTrueTypeFontUC::getStringAsPoints(const string &utf8_src, bool vflip){
+vector<ofPath> ofxTrueTypeFontUC::getStringAsPoints(const string &src, bool vflip){
   vector<ofPath> shapes;
   
   if (!mImpl->bLoadedOk) {
@@ -911,7 +985,7 @@ vector<ofPath> ofxTrueTypeFontUC::getStringAsPoints(const string &utf8_src, bool
     newLineDirection = -1;
   }
   
-  basic_string<unsigned int> utf32_src = util::ofxTrueTypeFontUC::convUTF8ToUTF32(utf8_src);
+  basic_string<unsigned int> utf32_src = convToUTF32(src);
   int len = (int)utf32_src.length();
   
   while (index < len) {
@@ -959,7 +1033,7 @@ float ofxTrueTypeFontUC::stringWidth(const string &c) {
 }
 
 
-ofRectangle ofxTrueTypeFontUC::getStringBoundingBox(const string &utf8_src, float x, float y){
+ofRectangle ofxTrueTypeFontUC::getStringBoundingBox(const string &src, float x, float y){
   
   ofRectangle myRect;
   
@@ -968,7 +1042,7 @@ ofRectangle ofxTrueTypeFontUC::getStringBoundingBox(const string &utf8_src, floa
     return myRect;
   }
   
-  basic_string<unsigned int> utf32_src = util::ofxTrueTypeFontUC::convUTF8ToUTF32(utf8_src);
+  basic_string<unsigned int> utf32_src = convToUTF32(src);
   int len = (int)utf32_src.length();
   
   GLint index = 0;
@@ -1046,7 +1120,7 @@ float ofxTrueTypeFontUC::stringHeight(const string &c){
 }
 
 //=====================================================================
-void ofxTrueTypeFontUC::drawString(const string &utf8_src, float x, float y){
+void ofxTrueTypeFontUC::drawString(const string &src, float x, float y){
   if (!mImpl->bLoadedOk) {
     ofLog(OF_LOG_ERROR,"ofxTrueTypeFontUC::drawString - Error : font not allocated -- line %d in %s", __LINE__,__FILE__);
     return;
@@ -1064,7 +1138,7 @@ void ofxTrueTypeFontUC::drawString(const string &utf8_src, float x, float y){
     newLineDirection = -1;
   }
   
-  basic_string<unsigned int> utf32_src = util::ofxTrueTypeFontUC::convUTF8ToUTF32(utf8_src);
+  basic_string<unsigned int> utf32_src = convToUTF32(src);
   int len = (int)utf32_src.length();
   
   while (index < len) {
@@ -1133,7 +1207,7 @@ void ofxTrueTypeFontUC::Impl::unbind(const unsigned int &charID){
 }
 
 //=====================================================================
-void ofxTrueTypeFontUC::drawStringAsShapes(const string &utf8_src, float x, float y){
+void ofxTrueTypeFontUC::drawStringAsShapes(const string &src, float x, float y){
   
   if (!mImpl->bLoadedOk) {
     ofLogError("ofxTrueTypeFontUC") << "drawStringAsShapes(): font not allocated: line " << __LINE__ << " in " << __FILE__;
@@ -1158,7 +1232,7 @@ void ofxTrueTypeFontUC::drawStringAsShapes(const string &utf8_src, float x, floa
     newLineDirection = -1;
   }
   
-  basic_string<unsigned int> utf32_src = util::ofxTrueTypeFontUC::convUTF8ToUTF32(utf8_src);
+  basic_string<unsigned int> utf32_src = convToUTF32(src);
   int len = (int)utf32_src.length();
   
   while (index < len) {
@@ -1188,64 +1262,4 @@ void ofxTrueTypeFontUC::drawStringAsShapes(const string &utf8_src, float x, floa
 int ofxTrueTypeFontUC::getNumCharacters() {
   return mImpl->loadedChars.size();
 }
-
-//===========================================================
-namespace util {
-  namespace ofxTrueTypeFontUC {
-
-basic_string<unsigned int> convUTF8ToUTF32(const std::string &utf8_src){
-  basic_string<unsigned int> dst;
-  
-  // convert UTF-8 on char or wchar_t to UCS-4 on wchar_t
-  int size = utf8_src.size();
-  int index = 0;
-  while (index < size) {
-    wchar_t c = (unsigned char)utf8_src[index];
-    if (c < 0x80) {
-      dst += (c);
-    }
-    else if (c < 0xe0) {
-      if (index + 1 < size) {
-        dst += (((c & 0x1f) << 6) | (utf8_src[index+1] & 0x3f));
-        index++;
-      }
-    }
-    else if (c < 0xf0) {
-      if (index + 2 < size) {
-        dst += (((c & 0x0f) << 12) | ((utf8_src[index+1] & 0x3f) << 6) |
-                (utf8_src[index+2] & 0x3f));
-        index += 2;
-      }
-    }
-    else if (c < 0xf8) {
-      if (index + 3 < size) {
-        dst += (((c & 0x07) << 18) | ((utf8_src[index+1] & 0x3f) << 12) |
-                ((utf8_src[index+2] & 0x3f) << 6) | (utf8_src[index+3] & 0x3f));
-        index += 3;
-      }
-    }
-    else if (c < 0xfc) {
-      if (index + 4 < size) {
-        dst += (((c & 0x03) << 24) | ((utf8_src[index+1] & 0x3f) << 18) |
-                ((utf8_src[index+2] & 0x3f) << 12) | ((utf8_src[index+3] & 0x3f) << 6) |
-                (utf8_src[index+4] & 0x3f));
-        index += 4;
-      }
-    }
-    else if (c < 0xfe) {
-      if (index + 5 < size) {
-        dst += (((c & 0x01) << 30) | ((utf8_src[index+1] & 0x3f) << 24) |
-                ((utf8_src[index+2] & 0x3f) << 18) | ((utf8_src[index+3] & 0x3f) << 12) |
-                ((utf8_src[index+4] & 0x3f) << 6) | (utf8_src[index+5] & 0x3f));
-        index += 5;
-      }
-    }
-    index++;
-  }
-  
-  return dst;
-}
-
-  } // namespace ofxTrueTypeFontUC
-} // namespace util
 
