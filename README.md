@@ -4,7 +4,7 @@
 
 ## Overview
 
-An extension of ofTrueTypeFont class for using UNICODE characters.
+An extension of ofTrueTypeFont class for using UNICODE characters. Tested on OSX, iOS, and Windows.
 
 ## Requirement
 
@@ -66,10 +66,17 @@ Refer ```ofxTrueTypeFontUC.h``` with regard to other functions.
 1. Fork it ( http://github.com/hironishihara/ofxTrueTypeFontUC/fork )
 1. Create your feature branch (git checkout -b my-new-feature)
 1. Commit your changes (git commit -am 'Add some feature')
+1. Rebase your local changes against the master branch
 1. Confirm that your feature works just as you intended
 1. Confirm that your feature properly works together with functions of ofxTrueTypeFontUC
 1. Push to the branch (git push origin my-new-feature)
 1. Create new Pull Request
+
+## Tested System
+
+- OSX (10.10) + Xcode (6.1) + openFrameworks 0.8.4 (osx)
+- iOS (8.1) + Xcode (6.1) + openFrameworks 0.8.4 (ios)
+- Windows 8.1 + Visual Studio 2012 Express + openFrameworks 0.8.4 (windows)
 
 ## License
 
