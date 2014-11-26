@@ -168,8 +168,8 @@ public:
   
   bool loadFontFace(string fontname);
   
-  static const unsigned int kLimitCharactersNum = 10000;
-  static const unsigned int kTypeFaceUnloaded = 0;
+  //static const unsigned int kLimitCharactersNum = 10000;
+  //static const unsigned int kTypeFaceUnloaded = 0;
   
   ofPath getCharacterAsPointsFromCharID(const int & charID);
   
@@ -753,7 +753,7 @@ vector<ofPath> ofxTrueTypeFontUC::getStringAsPoints(const string &src, bool vfli
   if (!mImpl->bLoadedOk_) {
     ofLog(OF_LOG_ERROR,"Error : font not allocated -- line %d in %s", __LINE__,__FILE__);
     return shapes;
-  };
+  }
   
   GLint index	= 0;
   GLfloat X = 0;
@@ -769,24 +769,26 @@ vector<ofPath> ofxTrueTypeFontUC::getStringAsPoints(const string &src, bool vfli
   
   basic_string<unsigned int> utf32_src = convToUTF32(src);
   int len = (int)utf32_src.length();
+  int c, cy;
   
   while (index < len) {
-    unsigned int charID = mImpl->getCharID(utf32_src[index]);
-    if (mImpl->cps[charID].character == mImpl->kTypeFaceUnloaded) {
-      mImpl->loadChar(charID);
-    }
-    if (utf32_src[index] == (unsigned int)'\n') {
-      Y += mImpl->lineHeight_ * newLineDirection;
-      X = 0;
-    }
-    else if (utf32_src[index] == (unsigned int)' ') {
-      X += mImpl->cps[charID].setWidth * mImpl->letterSpacing_ * mImpl->spaceSize_;
-    }
-    else {
-      shapes.push_back(mImpl->getCharacterAsPointsFromCharID(charID));
-      shapes.back().translate(ofPoint(X,Y));
-      X += mImpl->cps[charID].setWidth * mImpl->letterSpacing_;
-    }
+      c = utf32_src[index];
+      if (c == '\n') {
+          Y += mImpl->lineHeight_ * newLineDirection;
+          X = 0;
+      }
+      else if (c == ' ') {
+          cy = mImpl->getCharID('p');
+          X += mImpl->cps[cy].setWidth * mImpl->letterSpacing_ * mImpl->spaceSize_;
+      }
+      else {
+          cy = mImpl->getCharID(c);
+          if (mImpl->cps[cy].character == mImpl->kTypefaceUnloaded)
+              mImpl->loadChar(cy);
+          shapes.push_back(mImpl->getCharacterAsPointsFromCharID(cy));
+          shapes.back().translate(ofPoint(X,Y));
+          X += mImpl->cps[cy].setWidth * mImpl->letterSpacing_;
+      }
     index++;
   }
   
@@ -835,53 +837,54 @@ ofRectangle ofxTrueTypeFontUC::getStringBoundingBox(const string &src, float x, 
   }
   
   bool bFirstCharacter = true;
-  while (index < len) {
-    int cy = mImpl->getCharID(utf32_src[index]);
-    if(mImpl->cps[cy].character == mImpl->kTypefaceUnloaded)
-      mImpl->loadChar(cy);
+  int c, cy;
     
-    if (cy < mImpl->limitCharactersNum_) { // full char set or not?
-      if (utf32_src[index] == '\n') {
-        yoffset += mImpl->lineHeight_;
-        xoffset = 0 ; //reset X Pos back to zero
+  while (index < len)
+  {
+      c = utf32_src[index];
+      if (c == '\n') {
+          yoffset += mImpl->lineHeight_;
+          xoffset = 0 ; //reset X Pos back to zero
       }
-      else if (utf32_src[index] == ' ') {
-        int cy = mImpl->getCharID('p');
-        xoffset += mImpl->cps[cy].width * mImpl->letterSpacing_ * mImpl->spaceSize_;
-        // zach - this is a bug to fix -- for now, we don't currently deal with ' ' in calculating string bounding box
+      else if (c == ' ') {
+          cy = mImpl->getCharID('p');
+          xoffset += mImpl->cps[cy].width * mImpl->letterSpacing_ * mImpl->spaceSize_;
+          // zach - this is a bug to fix -- for now, we don't currently deal with ' ' in calculating string bounding box
       }
       else {
-        GLint height = mImpl->cps[cy].height;
-        GLint bwidth = mImpl->cps[cy].width * mImpl->letterSpacing_;
-        GLint top = mImpl->cps[cy].topExtent - mImpl->cps[cy].height;
-        GLint lextent	= mImpl->cps[cy].leftExtent;
-        float	x1, y1, x2, y2, corr, stretch;
-        stretch = 0;
-        corr = (float)(((mImpl->fontSize_ - height) + top) - mImpl->fontSize_);
-        x1 = (x + xoffset + lextent + bwidth + stretch);
-        y1 = (y + yoffset + height + corr + stretch);
-        x2 = (x + xoffset + lextent);
-        y2 = (y + yoffset + -top + corr);
-        xoffset += mImpl->cps[cy].setWidth * mImpl->letterSpacing_;
-        if (bFirstCharacter == true) {
-          minx = x2;
-          miny = y2;
-          maxx = x1;
-          maxy = y1;
-          bFirstCharacter = false;
-        }
-        else {
-          if (x2 < minx)
-            minx = x2;
-          if (y2 < miny)
-            miny = y2;
-          if (x1 > maxx)
-            maxx = x1;
-          if (y1 > maxy)
-            maxy = y1;
-        }
+          cy = mImpl->getCharID(c);
+          if (mImpl->cps[cy].character == mImpl->kTypefaceUnloaded)
+              mImpl->loadChar(cy);
+          GLint height = mImpl->cps[cy].height;
+          GLint bwidth = mImpl->cps[cy].width * mImpl->letterSpacing_;
+          GLint top = mImpl->cps[cy].topExtent - mImpl->cps[cy].height;
+          GLint lextent	= mImpl->cps[cy].leftExtent;
+          float	x1, y1, x2, y2, corr, stretch;
+          stretch = 0;
+          corr = (float)(((mImpl->fontSize_ - height) + top) - mImpl->fontSize_);
+          x1 = (x + xoffset + lextent + bwidth + stretch);
+          y1 = (y + yoffset + height + corr + stretch);
+          x2 = (x + xoffset + lextent);
+          y2 = (y + yoffset + -top + corr);
+          xoffset += mImpl->cps[cy].setWidth * mImpl->letterSpacing_;
+          if (bFirstCharacter == true) {
+              minx = x2;
+              miny = y2;
+              maxx = x1;
+              maxy = y1;
+              bFirstCharacter = false;
+          }
+          else {
+              if (x2 < minx)
+                  minx = x2;
+              if (y2 < miny)
+                  miny = y2;
+              if (x1 > maxx)
+                  maxx = x1;
+              if (y1 > maxy)
+                  maxy = y1;
+          }
       }
-    }
     index++;
   }
   
@@ -898,7 +901,7 @@ void ofxTrueTypeFontUC::drawString(const string &src, float x, float y){
   if (!mImpl->bLoadedOk_) {
     ofLog(OF_LOG_ERROR,"ofxTrueTypeFontUC::drawString - Error : font not allocated -- line %d in %s", __LINE__,__FILE__);
     return;
-  };
+  }
   
   GLint index	= 0;
   GLfloat X = x;
@@ -906,29 +909,27 @@ void ofxTrueTypeFontUC::drawString(const string &src, float x, float y){
   
   basic_string<unsigned int> utf32_src = convToUTF32(src);
   int len = (int)utf32_src.length();
-  
-  while (index < len) {
-    int cy = mImpl->getCharID(utf32_src[index]);
-    if (mImpl->cps[cy].character == mImpl->kTypefaceUnloaded)
-      mImpl->loadChar(cy);
+  int c, cy;
     
-    if (cy < mImpl->limitCharactersNum_) { // full char set or not?
-      if (utf32_src[index] == '\n') {
-        Y += mImpl->lineHeight_;
-        X = x ; //reset X Pos back to zero
+  while (index < len) {
+      c = utf32_src[index];
+      if (c == '\n') {
+          Y += mImpl->lineHeight_;
+          X = x ; //reset X Pos back to zero
       }
-      else if (utf32_src[index] == ' ') {
-        int cy = mImpl->getCharID('p');
-        X += mImpl->cps[cy].width * mImpl->letterSpacing_ * mImpl->spaceSize_;
+      else if (c == ' ') {
+          int cy = mImpl->getCharID('p');
+          X += mImpl->cps[cy].width * mImpl->letterSpacing_ * mImpl->spaceSize_;
       }
       else {
-        mImpl->bind(cy);
-        mImpl->drawChar(cy, X, Y);
-        mImpl->unbind(cy);
-        X += mImpl->cps[cy].setWidth * mImpl->letterSpacing_;
+          cy = mImpl->getCharID(c);
+          if (mImpl->cps[cy].character == mImpl->kTypefaceUnloaded)
+              mImpl->loadChar(cy);
+          mImpl->bind(cy);
+          mImpl->drawChar(cy, X, Y);
+          mImpl->unbind(cy);
+          X += mImpl->cps[cy].setWidth * mImpl->letterSpacing_;
       }
-    }
-    
     index++;
   }
 }
@@ -939,7 +940,7 @@ void ofxTrueTypeFontUC::drawStringAsShapes(const string &src, float x, float y){
   if (!mImpl->bLoadedOk_) {
     ofLogError("ofxTrueTypeFontUC") << "drawStringAsShapes(): font not allocated: line " << __LINE__ << " in " << __FILE__;
     return;
-  };
+  }
   
   //----------------------- error checking
   if (!mImpl->bMakeContours_) {
@@ -947,41 +948,35 @@ void ofxTrueTypeFontUC::drawStringAsShapes(const string &src, float x, float y){
     return;
   }
   
-  GLint		index	= 0;
-  GLfloat		X		= 0;
-  GLfloat		Y		= 0;
+  GLint index = 0;
+  GLfloat X = x;
+  GLfloat Y = y;
   
   basic_string<unsigned int> utf32_src = convToUTF32(src);
   int len = (int)utf32_src.length();
   
-  ofPushMatrix();
-  ofTranslate(x, y);
+  int c, cy;
   
-  while (index < len) {
-    int cy = mImpl->getCharID(utf32_src[index]);
-    if (mImpl->cps[cy].character == mImpl->kTypefaceUnloaded) {
-      mImpl->loadChar(cy);
-    }
-    if (cy < mImpl->limitCharactersNum_) { // full char set or not?
-      if (utf32_src[index] == '\n') {
-        Y += mImpl->lineHeight_;
-        X = 0 ; //reset X Pos back to zero
+  while (index < len)
+  {
+      c = utf32_src[index];
+      if (c == '\n') {
+          Y += mImpl->lineHeight_;
+          X = 0 ; //reset X Pos back to zero
       }
-      else if (utf32_src[index] == ' ') {
-        int cy = mImpl->getCharID('p');
-        X += mImpl->cps[cy].width;
-        //glTranslated(cps[cy].width, 0, 0);
+      else if (c == ' ') {
+          cy = mImpl->getCharID('p');
+          X += mImpl->cps[cy].width;
       }
       else {
-        mImpl->drawCharAsShape(cy, X, Y);
-        X += mImpl->cps[cy].setWidth;
-        //glTranslated(cps[cy].setWidth, 0, 0);
+          cy = mImpl->getCharID(c);
+          if (mImpl->cps[cy].character == mImpl->kTypefaceUnloaded)
+              mImpl->loadChar(cy);
+          mImpl->drawCharAsShape(cy, X, Y);
+          X += mImpl->cps[cy].setWidth;
       }
-    }
-    index++;
+      index++;
   }
-  
-  ofPopMatrix();
 }
 
 //-----------------------------------------------------------
@@ -991,7 +986,7 @@ int ofxTrueTypeFontUC::getLoadedCharactersCount() {
 
 //=====================================================================
 const int ofxTrueTypeFontUC::Impl::kNumCharcterToStart = 33;  // 0 - 32 are control characters, no graphics needed.
-const int ofxTrueTypeFontUC::Impl::kTypefaceUnloaded = 0;
+const int ofxTrueTypeFontUC::Impl::kTypefaceUnloaded = -1;    // Don't use 0 to prevent infinite loadChar('!')
 const int ofxTrueTypeFontUC::Impl::kDefaultLimitCharactersNum = 10000;
 
 //-----------------------------------------------------------
