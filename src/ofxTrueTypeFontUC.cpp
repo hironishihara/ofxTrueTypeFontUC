@@ -957,7 +957,7 @@ void ofxTrueTypeFontUC::drawStringAsShapes(const string &src, float x, float y){
       c = utf32_src[index];
       if (c == '\n') {
           Y += mImpl->lineHeight_;
-          X = 0 ; //reset X Pos back to zero
+          X = x ; //reset X Pos back to zero
       }
       else if (c == ' ') {
           cy = mImpl->getCharID('p');
