@@ -168,9 +168,6 @@ public:
   
   bool loadFontFace(string fontname);
   
-  //static const unsigned int kLimitCharactersNum = 10000;
-  //static const unsigned int kTypeFaceUnloaded = 0;
-  
   ofPath getCharacterAsPointsFromCharID(const int & charID);
   
   void bind(const int & charID);
@@ -180,7 +177,6 @@ public:
   void loadChar(const int & charID);
   vector<int> loadedChars;
   
-  static const int kNumCharcterToStart;
   static const int kTypefaceUnloaded;
   static const int kDefaultLimitCharactersNum;
   
@@ -208,7 +204,6 @@ static ofPath makeContoursForCharacter(FT_Face & face);
 
 static ofPath makeContoursForCharacter(FT_Face & face) {
   
-  //int num			= face->glyph->outline.n_points;
   int nContours	= face->glyph->outline.n_contours;
   int startPos	= 0;
   
@@ -985,8 +980,7 @@ int ofxTrueTypeFontUC::getLoadedCharactersCount() {
 }
 
 //=====================================================================
-const int ofxTrueTypeFontUC::Impl::kNumCharcterToStart = 33;  // 0 - 32 are control characters, no graphics needed.
-const int ofxTrueTypeFontUC::Impl::kTypefaceUnloaded = -1;    // Don't use 0 to prevent infinite loadChar('!')
+const int ofxTrueTypeFontUC::Impl::kTypefaceUnloaded = 0;
 const int ofxTrueTypeFontUC::Impl::kDefaultLimitCharactersNum = 10000;
 
 //-----------------------------------------------------------
@@ -1077,13 +1071,13 @@ void ofxTrueTypeFontUC::Impl::implReserveCharacters(int num) {
   }
   
   //--------------- load 'p' character for display ' '
-  int cy = getCharID(L'p');
+  int cy = getCharID('p');
   loadChar(cy);
 }
 
 //-----------------------------------------------------------
 int ofxTrueTypeFontUC::Impl::getCharID(const int &c) {
-  int tmp = (int)c - kNumCharcterToStart;
+  int tmp = (int)c;
   int point = 0;
   for (; point != (int)loadedChars.size(); ++point) {
     if (loadedChars[point] == tmp) {
@@ -1109,9 +1103,9 @@ void ofxTrueTypeFontUC::Impl::loadChar(const int &charID) {
   ofPixels expandedData;
   
   //------------------------------------------ anti aliased or not:
-  FT_Error err = FT_Load_Glyph( face_, FT_Get_Char_Index( face_, loadedChars[i] + kNumCharcterToStart ), FT_LOAD_DEFAULT );
+  FT_Error err = FT_Load_Glyph( face_, FT_Get_Char_Index( face_, loadedChars[i] ), FT_LOAD_DEFAULT );
   if(err)
-    ofLog(OF_LOG_ERROR,"ofxTrueTypeFontUC::loadFont - Error with FT_Load_Glyph %i: FT_Error = %d", loadedChars[i] + kNumCharcterToStart, err);
+    ofLog(OF_LOG_ERROR,"ofxTrueTypeFontUC::loadFont - Error with FT_Load_Glyph %i: FT_Error = %d", loadedChars[i], err);
   
   if (bAntiAliased_ == true)
     FT_Render_Glyph(face_->glyph, FT_RENDER_MODE_NORMAL);
