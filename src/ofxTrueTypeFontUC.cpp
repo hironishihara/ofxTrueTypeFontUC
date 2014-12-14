@@ -2,10 +2,19 @@
 //--------------------------
 
 #include "ft2build.h"
+
+#ifdef TARGET_LINUX
+#include FT_FREETYPE_H
+#include FT_GLYPH_H
+#include FT_OUTLINE_H
+#include FT_TRIGONOMETRY_H
+#include <fontconfig/fontconfig.h>
+#else
 #include "freetype2/freetype/freetype.h"
 #include "freetype2/freetype/ftglyph.h"
 #include "freetype2/freetype/ftoutln.h"
 #include "freetype2/freetype/fttrigon.h"
+#endif
 
 #include <algorithm>
 
@@ -13,10 +22,6 @@
 #include <windows.h>
 #include <codecvt>
 #include <locale>
-#endif
-
-#ifdef TARGET_LINUX
-#include <fontconfig/fontconfig.h>
 #endif
 
 #include "ofPoint.h"
@@ -472,9 +477,37 @@ static string winFontPathByName( string fontname ){
   }
   return "";
 }
-
 #endif
 
+#ifdef TARGET_LINUX
+static string linuxFontPathByName(string fontname){
+  string filename;
+  FcPattern * pattern = FcNameParse((const FcChar8*)fontname.c_str());
+  FcBool ret = FcConfigSubstitute(0,pattern,FcMatchPattern);
+  if (!ret) {
+    ofLogError() << "linuxFontPathByName(): couldn't find font file or system font with name \"" << fontname << "\"";
+    return "";
+  }
+  FcDefaultSubstitute(pattern);
+  FcResult result;
+  FcPattern * fontMatch=NULL;
+  fontMatch = FcFontMatch(0,pattern,&result);
+
+  if (!fontMatch) {
+    ofLogError() << "linuxFontPathByName(): couldn't match font file or system font with name \"" << fontname << "\"";
+    return "";
+  }
+  FcChar8 *file;
+  if (FcPatternGetString (fontMatch, FC_FILE, 0, &file) == FcResultMatch) {
+    filename = (const char*)file;
+  }
+  else {
+    ofLogError() << "linuxFontPathByName(): couldn't find font match for \"" << fontname << "\"";
+    return "";
+  }
+  return filename;
+}
+#endif
 
 //------------------------------------------------------------------
 ofxTrueTypeFontUC::ofxTrueTypeFontUC() {
