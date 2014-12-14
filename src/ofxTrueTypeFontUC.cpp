@@ -477,9 +477,37 @@ static string winFontPathByName( string fontname ){
   }
   return "";
 }
-
 #endif
 
+#ifdef TARGET_LINUX
+static string linuxFontPathByName(string fontname){
+  string filename;
+  FcPattern * pattern = FcNameParse((const FcChar8*)fontname.c_str());
+  FcBool ret = FcConfigSubstitute(0,pattern,FcMatchPattern);
+  if (!ret) {
+    ofLogError() << "linuxFontPathByName(): couldn't find font file or system font with name \"" << fontname << "\"";
+    return "";
+  }
+  FcDefaultSubstitute(pattern);
+  FcResult result;
+  FcPattern * fontMatch=NULL;
+  fontMatch = FcFontMatch(0,pattern,&result);
+
+  if (!fontMatch) {
+    ofLogError() << "linuxFontPathByName(): couldn't match font file or system font with name \"" << fontname << "\"";
+    return "";
+  }
+  FcChar8 *file;
+  if (FcPatternGetString (fontMatch, FC_FILE, 0, &file) == FcResultMatch) {
+    filename = (const char*)file;
+  }
+  else {
+    ofLogError() << "linuxFontPathByName(): couldn't find font match for \"" << fontname << "\"";
+    return "";
+  }
+  return filename;
+}
+#endif
 
 //------------------------------------------------------------------
 ofxTrueTypeFontUC::ofxTrueTypeFontUC() {
@@ -535,35 +563,6 @@ void ofxTrueTypeFontUC::Impl::implUnloadFont() {
 void ofxTrueTypeFontUC::unloadFont() {
   mImpl->implUnloadFont();
 }
-
-#ifdef TARGET_LINUX
-static string linuxFontPathByName(string fontname){
-  string filename;
-  FcPattern * pattern = FcNameParse((const FcChar8*)fontname.c_str());
-  FcBool ret = FcConfigSubstitute(0,pattern,FcMatchPattern);
-  if(!ret){
-    ofLogError() << "linuxFontPathByName(): couldn't find font file or system font with name \"" << fontname << "\"";
-    return "";
-  }
-  FcDefaultSubstitute(pattern);
-  FcResult result;
-  FcPattern * fontMatch=NULL;
-  fontMatch = FcFontMatch(0,pattern,&result);
-
-  if(!fontMatch){
-    ofLogError() << "linuxFontPathByName(): couldn't match font file or system font with name \"" << fontname << "\"";
-    return "";
-  }
-  FcChar8 *file;
-  if (FcPatternGetString (fontMatch, FC_FILE, 0, &file) == FcResultMatch){
-    filename = (const char*)file;
-  }else{
-    ofLogError() << "linuxFontPathByName(): couldn't find font match for \"" << fontname << "\"";
-    return "";
-  }
-  return filename;
-}
-#endif
 
 bool ofxTrueTypeFontUC::Impl::loadFontFace(string fontname){
   filename_ = ofToDataPath(fontname,true);
