@@ -924,6 +924,18 @@ ofRectangle ofxTrueTypeFontUC::getStringBoundingBox(const string &src, float x, 
   return myRect;
 }
 
+float ofxTrueTypeFontUC::stringWidth(const string &str) {
+    ofRectangle rect = getStringBoundingBox(str, 0,0);
+    return rect.width;
+}
+
+float ofxTrueTypeFontUC::stringHeight(const string &str) {
+    ofRectangle rect = getStringBoundingBox(str, 0,0);
+    return rect.height;
+}
+
+
+
 //=====================================================================
 void ofxTrueTypeFontUC::drawString(const string &src, float x, float y){
   if (!mImpl->bLoadedOk_) {
