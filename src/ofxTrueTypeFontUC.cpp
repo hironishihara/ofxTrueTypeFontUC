@@ -1216,7 +1216,7 @@ void ofxTrueTypeFontUC::Impl::loadChar(const int &charID) {
   cps[i].y2 = -top + corr;
   
   // Allocate Memory For The Texture Data.
-  expandedData.allocate(width, height, 2);
+  expandedData.allocate(width, height, OF_PIXELS_RGB );
   //-------------------------------- clear data:
   expandedData.set(0,255); // every luminance pixel = 255
   expandedData.set(1,0);
@@ -1260,7 +1260,7 @@ void ofxTrueTypeFontUC::Impl::loadChar(const int &charID) {
   int h = w;
   
   ofPixels atlasPixels;
-  atlasPixels.allocate(w,h,2);
+  atlasPixels.allocate(w,h,OF_PIXELS_RGB);
   atlasPixels.set(0,255);
   atlasPixels.set(1,0);
   
@@ -1278,7 +1278,7 @@ void ofxTrueTypeFontUC::Impl::loadChar(const int &charID) {
   else {
     textures[i].setTextureMinMagFilter(GL_NEAREST,GL_NEAREST);
   }
-  
-  textures[i].loadData(atlasPixels.getPixels(), atlasPixels.getWidth(), atlasPixels.getHeight(), GL_LUMINANCE_ALPHA);
+	
+  textures[i].loadData(atlasPixels, GL_LUMINANCE_ALPHA);
 }
 
