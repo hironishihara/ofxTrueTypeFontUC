@@ -10,10 +10,17 @@
 #include FT_TRIGONOMETRY_H
 #include <fontconfig/fontconfig.h>
 #else
+#if (OF_VERSION_MAJOR == 0) && (OF_VERSION_MINOR <= 8)
+#include "freetype2/freetype/freetype.h"
+#include "freetype2/freetype/ftglyph.h"
+#include "freetype2/freetype/ftoutln.h"
+#include "freetype2/freetype/fttrigon.h"
+#else
 #include "freetype.h"
 #include "ftglyph.h"
 #include "ftoutln.h"
 #include "fttrigon.h"
+#endif
 #endif
 
 #include <algorithm>
