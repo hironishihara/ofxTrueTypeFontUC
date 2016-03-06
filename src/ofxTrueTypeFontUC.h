@@ -21,6 +21,7 @@ public:
   static void setGlobalDpi(int newDpi);
   
   // 			-- default (without dpi), anti aliased, 96 dpi:
+  bool load(string filename, int fontsize, bool bAntiAliased=true, bool makeContours=false, float simplifyAmt=0.3, int dpi=0);
   bool loadFont(string filename, int fontsize, bool bAntiAliased=true, bool makeContours=false, float simplifyAmt=0.3, int dpi=0);
   void reloadFont();
   void unloadFont();
