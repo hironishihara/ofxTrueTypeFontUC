@@ -626,6 +626,10 @@ void ofxTrueTypeFontUC::reloadFont() {
 }
 
 //-----------------------------------------------------------
+bool ofxTrueTypeFontUC::load(string filename, int fontsize, bool bAntiAliased, bool makeContours, float simplifyAmt, int dpi) {
+  return loadFont(filename, fontsize, bAntiAliased, makeContours, simplifyAmt, dpi);
+}
+
 bool ofxTrueTypeFontUC::loadFont(string filename, int fontsize, bool bAntiAliased, bool makeContours, float simplifyAmt, int dpi) {
   return mImpl->implLoadFont(filename, fontsize, bAntiAliased, makeContours, simplifyAmt, dpi);
   
@@ -1285,7 +1289,11 @@ void ofxTrueTypeFontUC::Impl::loadChar(const int &charID) {
   else {
     textures[i].setTextureMinMagFilter(GL_NEAREST,GL_NEAREST);
   }
-  
-  textures[i].loadData(atlasPixels.getPixels(), atlasPixels.getWidth(), atlasPixels.getHeight(), GL_LUMINANCE_ALPHA);
+	
+  #if (OF_VERSION_MAJOR == 0 && OF_VERSION_MINOR >= 9 && OF_VERSION_PATCH >= 2) || OF_VERSION_MAJOR > 0
+	textures[i].loadData(atlasPixels.getData(), atlasPixels.getWidth(), atlasPixels.getHeight(), GL_LUMINANCE_ALPHA);
+  #else
+	textures[i].loadData(atlasPixels.getPixels(), atlasPixels.getWidth(), atlasPixels.getHeight(), GL_LUMINANCE_ALPHA);
+  #endif
 }
 
