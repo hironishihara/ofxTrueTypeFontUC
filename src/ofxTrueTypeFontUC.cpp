@@ -813,7 +813,7 @@ vector<ofPath> ofxTrueTypeFontUC::getStringAsPoints(const string &src, bool vfli
 
   while (index < len) {
       c = utf32_src[index];
-      if (c == '\n') {
+      if (c == '\n' || X >= mMaxWidth) {
           Y += mImpl->lineHeight_ * newLineDirection;
           X = 0;
       }
@@ -1012,7 +1012,7 @@ void ofxTrueTypeFontUC::drawStringAsShapes(const string &src, float x, float y){
   while (index < len)
   {
       c = utf32_src[index];
-      if (c == '\n') {
+      if (c == '\n' || X >= mMaxWidth) {
           Y += mImpl->lineHeight_;
           X = x ; //reset X Pos back to zero
       }
