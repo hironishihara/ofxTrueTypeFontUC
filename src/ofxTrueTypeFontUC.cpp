@@ -114,7 +114,7 @@ static const basic_string<unsigned int> convToUTF32(const string &utf8_src){
     }
     index++;
   }
-  
+
   return dst;
 }
 
@@ -813,7 +813,7 @@ vector<ofPath> ofxTrueTypeFontUC::getStringAsPoints(const string &src, bool vfli
 
   while (index < len) {
       c = utf32_src[index];
-      if (c == '\n' || X >= mMaxWidth) {
+      if (c == '\n' || (mMaxWidth > 0 && X >= mMaxWidth)) {
           Y += mImpl->lineHeight_ * newLineDirection;
           X = 0;
       }
@@ -882,7 +882,7 @@ ofRectangle ofxTrueTypeFontUC::getStringBoundingBox(const string &src, float x, 
   while (index < len)
   {
       c = utf32_src[index];
-      if (c == '\n' || xoffset >= mMaxWidth) {
+      if (c == '\n' || (mMaxWidth > 0 && xoffset >= mMaxWidth)) {
           yoffset += mImpl->lineHeight_;
           xoffset = 0 ; //reset X Pos back to zero
       }
@@ -965,7 +965,7 @@ void ofxTrueTypeFontUC::drawString(const string &src, float x, float y){
 
   while (index < len) {
       c = utf32_src[index];
-      if (c == '\n' || X >= mMaxWidth) {
+      if (c == '\n' || (mMaxWidth > 0 && X >= mMaxWidth)) {
           Y += mImpl->lineHeight_;
           X = x ; //reset X Pos back to zero
       }
@@ -1012,7 +1012,7 @@ void ofxTrueTypeFontUC::drawStringAsShapes(const string &src, float x, float y){
   while (index < len)
   {
       c = utf32_src[index];
-      if (c == '\n' || X >= mMaxWidth) {
+      if (c == '\n' || (mMaxWidth > 0 && X >= mMaxWidth)) {
           Y += mImpl->lineHeight_;
           X = x ; //reset X Pos back to zero
       }
