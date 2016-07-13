@@ -39,6 +39,26 @@
 #include "ofGraphics.h"
 
 
+//===========================================================
+#ifdef TARGET_WIN32
+
+static const basic_string<unsigned int> convToUTF32(const wstring &src) {
+	if (src.size() == 0) {
+		return basic_string<unsigned int>();
+	}
+
+	// convert UTF-16 -> UTF-8
+	const int utf8str_size = ::WideCharToMultiByte(CP_UTF8, 0, src.c_str(), -1, NULL, 0, NULL, 0);
+	vector<char> buffUTF8(utf8str_size);
+	::WideCharToMultiByte(CP_UTF8, 0, src.c_str(), -1, &buffUTF8[0], utf8str_size, NULL, 0);
+
+	// convert UTF-8 -> UTF-32 (UCS-4)
+	std::wstring_convert<std::codecvt_utf8<unsigned int>, unsigned int> convert32;
+	return convert32.from_bytes(&buffUTF8[0]);
+}
+
+#else
+#endif
 
 //===========================================================
 #ifdef TARGET_WIN32
@@ -935,6 +955,93 @@ ofRectangle ofxTrueTypeFontUC::getStringBoundingBox(const string &src, float x, 
   return myRect;
 }
 
+ofRectangle ofxTrueTypeFontUC::getStringBoundingBox(const wstring &src, float x, float y){
+  ofRectangle myRect;
+  
+  if (!mImpl->bLoadedOk_) {
+    ofLog(OF_LOG_ERROR,"ofxTrueTypeFontUC::getStringBoundingBox - font not allocated");
+    return myRect;
+  }
+  
+  basic_string<unsigned int> utf32_src = convToUTF32(src);
+  int len = (int)utf32_src.length();
+  
+  GLint index = 0;
+  GLfloat xoffset	= 0;
+  GLfloat yoffset	= 0;
+  float minx = -1;
+  float miny = -1;
+  float maxx = -1;
+  float maxy = -1;
+  
+  if (len < 1 || mImpl->cps.empty()) {
+    myRect.x = 0;
+    myRect.y = 0;
+    myRect.width = 0;
+    myRect.height = 0;
+    return myRect;
+  }
+  
+  bool bFirstCharacter = true;
+  int c, cy;
+    
+  while (index < len)
+  {
+      c = utf32_src[index];
+      if (c == '\n') {
+          yoffset += mImpl->lineHeight_;
+          xoffset = 0 ; //reset X Pos back to zero
+      }
+      else if (c == ' ') {
+          cy = mImpl->getCharID('p');
+          xoffset += mImpl->cps[cy].width * mImpl->letterSpacing_ * mImpl->spaceSize_;
+          // zach - this is a bug to fix -- for now, we don't currently deal with ' ' in calculating string bounding box
+      }
+      else {
+          cy = mImpl->getCharID(c);
+          if (mImpl->cps[cy].character == mImpl->kTypefaceUnloaded)
+              mImpl->loadChar(cy);
+          GLint height = mImpl->cps[cy].height;
+          GLint bwidth = mImpl->cps[cy].width * mImpl->letterSpacing_;
+          GLint top = mImpl->cps[cy].topExtent - mImpl->cps[cy].height;
+          GLint lextent	= mImpl->cps[cy].leftExtent;
+          float	x1, y1, x2, y2, corr, stretch;
+          stretch = 0;
+          corr = (float)(((mImpl->fontSize_ - height) + top) - mImpl->fontSize_);
+          x1 = (x + xoffset + lextent + bwidth + stretch);
+          y1 = (y + yoffset + height + corr + stretch);
+          x2 = (x + xoffset + lextent);
+          y2 = (y + yoffset + -top + corr);
+          xoffset += mImpl->cps[cy].setWidth * mImpl->letterSpacing_;
+          if (bFirstCharacter == true) {
+              minx = x2;
+              miny = y2;
+              maxx = x1;
+              maxy = y1;
+              bFirstCharacter = false;
+          }
+          else {
+              if (x2 < minx)
+                  minx = x2;
+              if (y2 < miny)
+                  miny = y2;
+              if (x1 > maxx)
+                  maxx = x1;
+              if (y1 > maxy)
+                  maxy = y1;
+          }
+      }
+    index++;
+  }
+  
+  myRect.x = minx;
+  myRect.y = miny;
+  myRect.width = maxx-minx;
+  myRect.height = maxy-miny;
+  
+  return myRect;
+}
+
 float ofxTrueTypeFontUC::stringWidth(const string &str) {
     ofRectangle rect = getStringBoundingBox(str, 0,0);
     return rect.width;
@@ -944,8 +1051,6 @@ float ofxTrueTypeFontUC::stringHeight(const string &str) {
     ofRectangle rect = getStringBoundingBox(str, 0,0);
     return rect.height;
 }
-
-
 
 //=====================================================================
 void ofxTrueTypeFontUC::drawString(const string &src, float x, float y){
@@ -985,6 +1090,79 @@ void ofxTrueTypeFontUC::drawString(const string &src, float x, float y){
   }
 }
 
+//=====================================================================
+void ofxTrueTypeFontUC::drawString(const basic_string<unsigned int> &src, float x, float y) {
+	if (!mImpl->bLoadedOk_) {
+		ofLog(OF_LOG_ERROR, "ofxTrueTypeFontUC::drawString - Error : font not allocated -- line %d in %s", __LINE__, __FILE__);
+		return;
+	}
+
+	GLint index = 0;
+	GLfloat X = x;
+	GLfloat Y = y;
+
+	int len = (int)src.length();
+	int c, cy;
+
+	while (index < len) {
+		c = src[index];
+		if (c == '\n') {
+			Y += mImpl->lineHeight_;
+			X = x; //reset X Pos back to zero
+		}
+		else if (c == ' ') {
+			int cy = mImpl->getCharID('p');
+			X += mImpl->cps[cy].width * mImpl->letterSpacing_ * mImpl->spaceSize_;
+		}
+		else {
+			cy = mImpl->getCharID(c);
+			if (mImpl->cps[cy].character == mImpl->kTypefaceUnloaded)
+				mImpl->loadChar(cy);
+			mImpl->bind(cy);
+			mImpl->drawChar(cy, X, Y);
+			mImpl->unbind(cy);
+			X += mImpl->cps[cy].setWidth * mImpl->letterSpacing_;
+		}
+		index++;
+	}
+}
+
+//=====================================================================
+void ofxTrueTypeFontUC::drawString(const wstring &src, float x, float y) {
+	if (!mImpl->bLoadedOk_) {
+		ofLog(OF_LOG_ERROR, "ofxTrueTypeFontUC::drawString - Error : font not allocated -- line %d in %s", __LINE__, __FILE__);
+		return;
+	}
+
+	GLint index = 0;
+	GLfloat X = x;
+	GLfloat Y = y;
+
+	int len = (int)src.length();
+	int c, cy;
+
+	while (index < len) {
+		c = src[index];
+		if (c == '\n') {
+			Y += mImpl->lineHeight_;
+			X = x; //reset X Pos back to zero
+		}
+		else if (c == ' ') {
+			int cy = mImpl->getCharID('p');
+			X += mImpl->cps[cy].width * mImpl->letterSpacing_ * mImpl->spaceSize_;
+		}
+		else {
+			cy = mImpl->getCharID(c);
+			if (mImpl->cps[cy].character == mImpl->kTypefaceUnloaded)
+				mImpl->loadChar(cy);
+			mImpl->bind(cy);
+			mImpl->drawChar(cy, X, Y);
+			mImpl->unbind(cy);
+			X += mImpl->cps[cy].setWidth * mImpl->letterSpacing_;
+		}
+		index++;
+	}
+}
 //=====================================================================
 void ofxTrueTypeFontUC::drawStringAsShapes(const string &src, float x, float y){
   

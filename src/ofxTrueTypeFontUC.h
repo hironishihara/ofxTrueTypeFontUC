@@ -27,10 +27,13 @@ public:
   void unloadFont();
   
   void drawString(const string &str, float x, float y);
+  void drawString(const wstring &str, float x, float y);
+  void drawString(const basic_string<unsigned int> &str, float x, float y);
   void drawStringAsShapes(const string &str, float x, float y);
   
   vector<ofPath> getStringAsPoints(const string &str, bool vflip=ofIsVFlipped());
   ofRectangle getStringBoundingBox(const string &str, float x, float y);
+  ofRectangle getStringBoundingBox(const wstring &str, float x, float y);
   
   bool isLoaded();
   bool isAntiAliased();
