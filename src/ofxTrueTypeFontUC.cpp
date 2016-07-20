@@ -1,4 +1,4 @@
-#include "ofxTrueTypeFontUC.h"
+﻿#include "ofxTrueTypeFontUC.h"
 //--------------------------
 
 #include "ft2build.h"
@@ -1173,6 +1173,58 @@ void ofxTrueTypeFontUC::drawStringCenter(const wstring &src, float x, float y) {
 
 	ofRectangle boundingBox = getStringBoundingBox(src, x, y);
 	drawString(src, (int)(x - (boundingBox.getWidth() / 2)), (int)y);
+}
+void ofxTrueTypeFontUC::drawStringCenter(const wstring &src, ofRectangle box) {
+
+	ofRectangle boundingBox = getStringBoundingBox(src, 0, 0);
+	if (boundingBox.getWidth() < box.getWidth())
+	{
+		drawString(src, box.getLeft() + (box.getWidth() - boundingBox.getWidth()) / 2, box.getBottom() - (box.getHeight() - boundingBox.getHeight()) / 2);
+	}
+	else
+	{
+		//사각형 안에 들어올때까지 때까지 스페이스를 라인피드로, 스페이스 없으면 끝.
+
+		wstring tmp = src;
+		queue<wstring> spaceDelimitedStrings;
+		size_t lastSpaceIndex;
+		while(wstring::npos != (lastSpaceIndex = tmp.find(L' ')))
+		{
+			spaceDelimitedStrings.push(tmp.substr(0, lastSpaceIndex));
+			tmp.erase(0, lastSpaceIndex+1);
+		}
+		spaceDelimitedStrings.push(tmp);
+
+		vector<wstring> linesInsideBox;
+		while (!spaceDelimitedStrings.empty())
+		{
+			if (linesInsideBox.empty())
+			{
+				linesInsideBox.push_back(spaceDelimitedStrings.front());
+				spaceDelimitedStrings.pop();
+			}
+			if (getStringBoundingBox(linesInsideBox.back() + L" " + spaceDelimitedStrings.front(), 0, 0).getWidth() < box.getWidth())
+			{
+				linesInsideBox.back() += (L" " + spaceDelimitedStrings.front());
+				spaceDelimitedStrings.pop();
+			}
+			else
+			{
+				linesInsideBox.push_back(spaceDelimitedStrings.front());
+				spaceDelimitedStrings.pop();
+			}
+		}
+
+		float y_reference_pos = box.getTop() + ((box.getHeight() - (getLineHeight() * linesInsideBox.size())) / 2);
+		float x_pos = box.getCenter().x;
+		for (auto line : linesInsideBox)
+		{
+			drawStringCenter(line, x_pos, y_reference_pos += getLineHeight());
+		}
+
+
+//		drawString(tmp, box.getLeft() + (box.getWidth() - boundingBox.getWidth()) / 2, box.getBottom() - (box.getHeight() - boundingBox.getHeight()) / 2);
+	}
 }
 //=====================================================================
 void ofxTrueTypeFontUC::drawStringAsShapes(const string &src, float x, float y){
