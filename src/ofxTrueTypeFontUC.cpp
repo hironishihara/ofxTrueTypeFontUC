@@ -1091,6 +1091,11 @@ void ofxTrueTypeFontUC::drawString(const string &src, float x, float y){
 }
 
 //=====================================================================
+void ofxTrueTypeFontUC::drawStringCenter(const string &src, float x, float y)
+{
+	drawString(src, (int)(x - (getStringBoundingBox(src, x, y).getWidth() / 2)), (int)y);
+}
+//=====================================================================
 void ofxTrueTypeFontUC::drawString(const basic_string<unsigned int> &src, float x, float y) {
 	if (!mImpl->bLoadedOk_) {
 		ofLog(OF_LOG_ERROR, "ofxTrueTypeFontUC::drawString - Error : font not allocated -- line %d in %s", __LINE__, __FILE__);
@@ -1162,6 +1167,12 @@ void ofxTrueTypeFontUC::drawString(const wstring &src, float x, float y) {
 		}
 		index++;
 	}
+}
+//=====================================================================
+void ofxTrueTypeFontUC::drawStringCenter(const wstring &src, float x, float y) {
+
+	ofRectangle boundingBox = getStringBoundingBox(src, x, y);
+	drawString(src, (int)(x - (boundingBox.getWidth() / 2)), (int)y);
 }
 //=====================================================================
 void ofxTrueTypeFontUC::drawStringAsShapes(const string &src, float x, float y){
