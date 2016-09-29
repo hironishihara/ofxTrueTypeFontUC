@@ -58,6 +58,22 @@ static const basic_string<unsigned int> convToUTF32(const wstring &src) {
 }
 
 #else
+
+static const basic_string<unsigned int> convToUTF32(const wstring &src) {
+    if (src.size() == 0) {
+        return basic_string<unsigned int>();
+    }
+
+    // convert UTF-16 -> UTF-8
+    const int utf8str_size = ::WideCharToMultiByte(CP_UTF8, 0, src.c_str(), -1, NULL, 0, NULL, 0);
+    vector<char> buffUTF8(utf8str_size);
+    ::WideCharToMultiByte(CP_UTF8, 0, src.c_str(), -1, &buffUTF8[0], utf8str_size, NULL, 0);
+
+    // convert UTF-8 -> UTF-32 (UCS-4)
+    std::wstring_convert<std::codecvt_utf8<unsigned int>, unsigned int> convert32;
+    return convert32.from_bytes(&buffUTF8[0]);
+}
+
 #endif
 
 //===========================================================
@@ -1202,6 +1218,10 @@ void ofxTrueTypeFontUC::drawStringCenter(const wstring &src, ofRectangle box) {
 			{
 				linesInsideBox.push_back(spaceDelimitedStrings.front());
 				spaceDelimitedStrings.pop();
+				if (spaceDelimitedStrings.empty())
+				{
+					break;
+				}
 			}
 			if (getStringBoundingBox(linesInsideBox.back() + L" " + spaceDelimitedStrings.front(), 0, 0).getWidth() < box.getWidth())
 			{

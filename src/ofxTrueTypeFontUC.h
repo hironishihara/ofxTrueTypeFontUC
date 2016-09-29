@@ -29,6 +29,7 @@ public:
   void drawString(const string &str, float x, float y);
   void drawStringCenter(const string &str, float x, float y);
   void drawString(const wstring &str, float x, float y);
+  void drawStringOutline(const wstring &str, float x, float y);
   void drawStringCenter(const wstring &str, float x, float y);
   void drawStringCenter(const wstring &str, ofRectangle box);
   void drawString(const basic_string<unsigned int> &str, float x, float y);

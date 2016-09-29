@@ -2,9 +2,9 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-  myFont.loadFont("dummyFont.ttf", 64, true, true);
+  myFont.loadFont("NotoSans-Regular.ttf", 64, true, true);
   
-  sampleString.append("あいうえお", 10);
+  sampleString.append("hello world", 10);
   
   p1 = ofPoint(100, 200);
   p2 = ofPoint(200, 300);
