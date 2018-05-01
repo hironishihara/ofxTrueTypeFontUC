@@ -1285,9 +1285,14 @@ void ofxTrueTypeFontUC::Impl::loadChar(const int &charID) {
   bool swizzle = false;
 
   #ifndef TARGET_OPENGLES
+  if (ofIsGLProgrammableRenderer()) {
     glFormat[0] = GL_RG16;
     glFormat[1] = GL_RG;
     swizzle = true;
+  } else {
+    glFormat[0] = GL_LUMINANCE16_ALPHA16;
+    glFormat[1] = GL_LUMINANCE_ALPHA;
+  }
   #endif
 
   textures[i].allocate(atlasPixels.getWidth(), atlasPixels.getHeight(), glFormat[0], false);
