@@ -1280,9 +1280,22 @@ void ofxTrueTypeFontUC::Impl::loadChar(const int &charID) {
   cps[i].t1 = float(cps[i].tW + border_) / float(w);
   cps[i].v1 = float(cps[i].tH + border_) / float(h);
   expandedData.pasteInto(atlasPixels, border_, border_);
-  
-  textures[i].allocate(atlasPixels.getWidth(), atlasPixels.getHeight(), GL_LUMINANCE_ALPHA, false);
-  
+
+  int glFormat[] = {GL_LUMINANCE_ALPHA, GL_LUMINANCE_ALPHA};
+  bool swizzle = false;
+
+  #ifndef TARGET_OPENGLES
+    glFormat[0] = GL_RG16;
+    glFormat[1] = GL_RG;
+    swizzle = true;
+  #endif
+
+  textures[i].allocate(atlasPixels.getWidth(), atlasPixels.getHeight(), glFormat[0], false);
+
+  if (swizzle) {
+      textures[i].setRGToRGBASwizzles(true);
+  }
+
   if (bAntiAliased_ && fontSize_>20) {
     textures[i].setTextureMinMagFilter(GL_LINEAR,GL_LINEAR);
   }
@@ -1291,9 +1304,9 @@ void ofxTrueTypeFontUC::Impl::loadChar(const int &charID) {
   }
 	
   #if (OF_VERSION_MAJOR == 0 && OF_VERSION_MINOR >= 9 && OF_VERSION_PATCH >= 2) || OF_VERSION_MAJOR > 0
-	textures[i].loadData(atlasPixels.getData(), atlasPixels.getWidth(), atlasPixels.getHeight(), GL_LUMINANCE_ALPHA);
+	textures[i].loadData(atlasPixels.getData(), atlasPixels.getWidth(), atlasPixels.getHeight(), glFormat[1]);
   #else
-	textures[i].loadData(atlasPixels.getPixels(), atlasPixels.getWidth(), atlasPixels.getHeight(), GL_LUMINANCE_ALPHA);
+	textures[i].loadData(atlasPixels.getPixels(), atlasPixels.getWidth(), atlasPixels.getHeight(), glFormat[1]);
   #endif
 }
 
