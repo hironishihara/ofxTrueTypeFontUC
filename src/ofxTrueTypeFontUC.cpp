@@ -10,7 +10,7 @@
 #include FT_TRIGONOMETRY_H
 #include <fontconfig/fontconfig.h>
 #else
-#if (OF_VERSION_MAJOR == 0) && (OF_VERSION_MINOR <= 8)
+#if (OF_VERSION_MAJOR == 0) && ((OF_VERSION_MINOR <= 8) || (OF_VERSION_MINOR == 10))
 #include "freetype2/freetype/freetype.h"
 #include "freetype2/freetype/ftglyph.h"
 #include "freetype2/freetype/ftoutln.h"
@@ -43,9 +43,9 @@
 //===========================================================
 #ifdef TARGET_WIN32
 
-static const basic_string<unsigned int> convToUTF32(const string &src) {
+static const std::basic_string<unsigned int> convToUTF32(const std::string &src) {
   if (src.size() == 0) {
-    return basic_string<unsigned int> ();
+    return std::basic_string<unsigned int> ();
   }
   
   // convert XXX -> UTF-16
@@ -65,8 +65,8 @@ static const basic_string<unsigned int> convToUTF32(const string &src) {
 
 #else
 
-static const basic_string<unsigned int> convToUTF32(const string &utf8_src){
-  basic_string<unsigned int> dst;
+static const std::basic_string<unsigned int> convToUTF32(const std::string &utf8_src){
+  std::basic_string<unsigned int> dst;
   
   // convert UTF-8 -> UTF-32 (UCS-4)
   int size = utf8_src.size();
@@ -140,7 +140,7 @@ public:
   Impl() :librariesInitialized_(false){};
   ~Impl() {};
   
-  bool implLoadFont(string filename, int fontsize, bool _bAntiAliased, bool makeContours, float _simplifyAmt, int dpi);
+  bool implLoadFont(std::string filename, int fontsize, bool _bAntiAliased, bool makeContours, float _simplifyAmt, int dpi);
   void implReserveCharacters(int num);
   void implUnloadFont();
   
@@ -165,7 +165,7 @@ public:
   void drawCharAsShape(int c, float x, float y);
   
   int	border_;  // visibleBorder;
-  string filename_;
+  std::string filename_;
   
   // ofTexture texAtlas;
   vector<ofTexture> textures;
@@ -178,7 +178,7 @@ public:
   FT_Face face_;
   bool librariesInitialized_;
   
-  bool loadFontFace(string fontname);
+  bool loadFontFace(std::string fontname);
   
   ofPath getCharacterAsPointsFromCharID(const int & charID);
   
@@ -382,16 +382,16 @@ void ofReloadAllFontTextures(){
 
 
 #ifdef TARGET_OSX
-static string osxFontPathByName( string fontname ){
+static std::string osxFontPathByName( std::string fontname ){
   CFStringRef targetName = CFStringCreateWithCString(NULL, fontname.c_str(), kCFStringEncodingUTF8);
   CTFontDescriptorRef targetDescriptor = CTFontDescriptorCreateWithNameAndSize(targetName, 0.0);
   CFURLRef targetURL = (CFURLRef) CTFontDescriptorCopyAttribute(targetDescriptor, kCTFontURLAttribute);
-  string fontPath = "";
+  std::string fontPath = "";
   
   if (targetURL) {
     UInt8 buffer[PATH_MAX];
     CFURLGetFileSystemRepresentation(targetURL, true, buffer, PATH_MAX);
-    fontPath = string((char *)buffer);
+    fontPath = std::string((char *)buffer);
     CFRelease(targetURL);
   }
   
@@ -405,7 +405,7 @@ static string osxFontPathByName( string fontname ){
 #ifdef TARGET_WIN32
 #include <map>
 // font font face -> file name name mapping
-static map<string, string> fonts_table;
+static map<std::string, std::string> fonts_table;
 // read font linking information from registry, and store in std::map
 static void initWindows(){
   LONG l_ret;
@@ -449,7 +449,7 @@ static void initWindows(){
    char fontsPath[2048];
    SHGetKnownFolderIDList(FOLDERID_Fonts, 0, NULL, &ppidl);
    SHGetPathFromIDList(ppidl,&fontsPath);*/
-  string fontsDir = getenv ("windir");
+  std::string fontsDir = getenv ("windir");
   fontsDir += "\\Fonts\\";
   for (DWORD i = 0; i < value_count; ++i) {
     DWORD name_len = 2048;
@@ -463,8 +463,8 @@ static void initWindows(){
     
     wcstombs(value_name_char,value_name,2048);
     wcstombs(value_data_char,reinterpret_cast<wchar_t *>(value_data),2048);
-    string curr_face = value_name_char;
-    string font_file = value_data_char;
+    std::string curr_face = value_name_char;
+    std::string font_file = value_data_char;
     curr_face = curr_face.substr(0, curr_face.find('(') - 1);
     fonts_table[curr_face] = fontsDir + font_file;
   }
@@ -474,11 +474,11 @@ static void initWindows(){
   l_ret = RegCloseKey(key_ft);
 }
 
-static string winFontPathByName( string fontname ){
+static std::string winFontPathByName( std::string fontname ){
   if (fonts_table.find(fontname)!=fonts_table.end()) {
     return fonts_table[fontname];
   }
-  for (map<string,string>::iterator it = fonts_table.begin(); it!=fonts_table.end(); it++) {
+  for (map<std::string,std::string>::iterator it = fonts_table.begin(); it!=fonts_table.end(); it++) {
     if (ofIsStringInString(ofToLower(it->first),ofToLower(fontname)))
       return it->second;
   }
@@ -487,8 +487,8 @@ static string winFontPathByName( string fontname ){
 #endif
 
 #ifdef TARGET_LINUX
-static string linuxFontPathByName(string fontname){
-  string filename;
+static std::string linuxFontPathByName(std::string fontname){
+  std::string filename;
   FcPattern * pattern = FcNameParse((const FcChar8*)fontname.c_str());
   FcBool ret = FcConfigSubstitute(0,pattern,FcMatchPattern);
   if (!ret) {
@@ -571,7 +571,7 @@ void ofxTrueTypeFontUC::unloadFont() {
   mImpl->implUnloadFont();
 }
 
-bool ofxTrueTypeFontUC::Impl::loadFontFace(string fontname){
+bool ofxTrueTypeFontUC::Impl::loadFontFace(std::string fontname){
   filename_ = ofToDataPath(fontname,true);
   ofFile fontFile(filename_, ofFile::Reference);
   int fontID = 0;
@@ -612,7 +612,7 @@ bool ofxTrueTypeFontUC::Impl::loadFontFace(string fontname){
   err = FT_New_Face( library_, filename_.c_str(), fontID, &face_ );
   if (err) {
     // simple error table in lieu of full table (see fterrors.h)
-    string errorString = "unknown freetype";
+    std::string errorString = "unknown freetype";
     if(err == 1) errorString = "INVALID FILENAME";
     ofLogError("ofxTrueTypeFontUC") << "loadFontFace(): couldn't create new face for \"" << fontname << "\": FT_Error " << err << " " << errorString;
     return false;
@@ -626,16 +626,16 @@ void ofxTrueTypeFontUC::reloadFont() {
 }
 
 //-----------------------------------------------------------
-bool ofxTrueTypeFontUC::load(string filename, int fontsize, bool bAntiAliased, bool makeContours, float simplifyAmt, int dpi) {
+bool ofxTrueTypeFontUC::load(std::string filename, int fontsize, bool bAntiAliased, bool makeContours, float simplifyAmt, int dpi) {
   return loadFont(filename, fontsize, bAntiAliased, makeContours, simplifyAmt, dpi);
 }
 
-bool ofxTrueTypeFontUC::loadFont(string filename, int fontsize, bool bAntiAliased, bool makeContours, float simplifyAmt, int dpi) {
+bool ofxTrueTypeFontUC::loadFont(std::string filename, int fontsize, bool bAntiAliased, bool makeContours, float simplifyAmt, int dpi) {
   return mImpl->implLoadFont(filename, fontsize, bAntiAliased, makeContours, simplifyAmt, dpi);
   
 }
 
-bool ofxTrueTypeFontUC::Impl::implLoadFont(string filename, int fontsize, bool bAntiAliased, bool makeContours, float simplifyAmt, int dpi) {
+bool ofxTrueTypeFontUC::Impl::implLoadFont(std::string filename, int fontsize, bool bAntiAliased, bool makeContours, float simplifyAmt, int dpi) {
   bMakeContours_ = makeContours;
   
   //------------------------------------------------
@@ -666,7 +666,7 @@ bool ofxTrueTypeFontUC::Impl::implLoadFont(string filename, int fontsize, bool b
   err = FT_New_Face(library_, filename_.c_str(), 0, &face_);
   if (err) {
     // simple error table in lieu of full table (see fterrors.h)
-    string errorString = "unknown freetype";
+    std::string errorString = "unknown freetype";
     if (err == 1)
       errorString = "INVALID FILENAME";
     ofLog(OF_LOG_ERROR,"ofxTrueTypeFontUC::loadFont - %s: %s: FT_Error = %d", errorString.c_str(), filename_.c_str(), err);
@@ -786,7 +786,7 @@ void ofxTrueTypeFontUC::Impl::drawChar(int c, float x, float y) {
 }
 
 //-----------------------------------------------------------
-vector<ofPath> ofxTrueTypeFontUC::getStringAsPoints(const string &src, bool vflip){
+vector<ofPath> ofxTrueTypeFontUC::getStringAsPoints(const std::string &src, bool vflip){
   vector<ofPath> shapes;
   
   if (!mImpl->bLoadedOk_) {
@@ -806,7 +806,7 @@ vector<ofPath> ofxTrueTypeFontUC::getStringAsPoints(const string &src, bool vfli
     newLineDirection = -1;
   }
   
-  basic_string<unsigned int> utf32_src = convToUTF32(src);
+  std::basic_string<unsigned int> utf32_src = convToUTF32(src);
   int len = (int)utf32_src.length();
   int c, cy;
   
@@ -848,7 +848,7 @@ void ofxTrueTypeFontUC::Impl::drawCharAsShape(int c, float x, float y) {
   charRef.draw(x,y);
 }
 
-ofRectangle ofxTrueTypeFontUC::getStringBoundingBox(const string &src, float x, float y){
+ofRectangle ofxTrueTypeFontUC::getStringBoundingBox(const std::string &src, float x, float y){
   ofRectangle myRect;
   
   if (!mImpl->bLoadedOk_) {
@@ -856,7 +856,7 @@ ofRectangle ofxTrueTypeFontUC::getStringBoundingBox(const string &src, float x, 
     return myRect;
   }
   
-  basic_string<unsigned int> utf32_src = convToUTF32(src);
+  std::basic_string<unsigned int> utf32_src = convToUTF32(src);
   int len = (int)utf32_src.length();
   
   GLint index = 0;
@@ -935,12 +935,12 @@ ofRectangle ofxTrueTypeFontUC::getStringBoundingBox(const string &src, float x, 
   return myRect;
 }
 
-float ofxTrueTypeFontUC::stringWidth(const string &str) {
+float ofxTrueTypeFontUC::stringWidth(const std::string &str) {
     ofRectangle rect = getStringBoundingBox(str, 0,0);
     return rect.width;
 }
 
-float ofxTrueTypeFontUC::stringHeight(const string &str) {
+float ofxTrueTypeFontUC::stringHeight(const std::string &str) {
     ofRectangle rect = getStringBoundingBox(str, 0,0);
     return rect.height;
 }
@@ -948,7 +948,7 @@ float ofxTrueTypeFontUC::stringHeight(const string &str) {
 
 
 //=====================================================================
-void ofxTrueTypeFontUC::drawString(const string &src, float x, float y){
+void ofxTrueTypeFontUC::drawString(const std::string &src, float x, float y){
   if (!mImpl->bLoadedOk_) {
     ofLog(OF_LOG_ERROR,"ofxTrueTypeFontUC::drawString - Error : font not allocated -- line %d in %s", __LINE__,__FILE__);
     return;
@@ -958,7 +958,7 @@ void ofxTrueTypeFontUC::drawString(const string &src, float x, float y){
   GLfloat X = x;
   GLfloat Y = y;
   
-  basic_string<unsigned int> utf32_src = convToUTF32(src);
+  std::basic_string<unsigned int> utf32_src = convToUTF32(src);
   int len = (int)utf32_src.length();
   int c, cy;
     
@@ -986,7 +986,7 @@ void ofxTrueTypeFontUC::drawString(const string &src, float x, float y){
 }
 
 //=====================================================================
-void ofxTrueTypeFontUC::drawStringAsShapes(const string &src, float x, float y){
+void ofxTrueTypeFontUC::drawStringAsShapes(const std::string &src, float x, float y){
   
   if (!mImpl->bLoadedOk_) {
     ofLogError("ofxTrueTypeFontUC") << "drawStringAsShapes(): font not allocated: line " << __LINE__ << " in " << __FILE__;
@@ -1003,7 +1003,7 @@ void ofxTrueTypeFontUC::drawStringAsShapes(const string &src, float x, float y){
   GLfloat X = x;
   GLfloat Y = y;
   
-  basic_string<unsigned int> utf32_src = convToUTF32(src);
+  std::basic_string<unsigned int> utf32_src = convToUTF32(src);
   int len = (int)utf32_src.length();
   
   int c, cy;
